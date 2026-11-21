@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Collateral Card</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="page">
+    <header class="intro">
+      <h1>Collateral Card</h1>
+      <p class="lede">
+        A stock-backed loan can look healthy while its oracle price is frozen. As the stock token trades through the weekend, an agent can watch the gap and use its paid quote income to cut debt before the oracle updates.
+      </p>
+      <p class="lede">
+        In a Base mainnet fork replay, the loan survived with quote income. Removing that income led to liquidation.
+      </p>
+      <nav class="judge-links" aria-label="Explore the demo">
+        <a href="#earned-heading">Compare the two loans</a>
+        <a class="rule-link" href="#attack-heading">Test the rule</a>
+        <a href="#limits-heading">Replay limits</a>
+      </nav>
+    </header>
+
+    <section class="stage" aria-label="Chart and attack controls">
+      <div class="chart-panel" id="chart-panel">
+        <div class="chart-wrap" id="chart-wrap">
+          <svg id="frozen-chart" class="frozen-chart" data-repay-ts="" viewBox="0 0 720 420" role="img" aria-labelledby="chart-title chart-desc">
+            <title id="chart-title">Frozen loan price against weekend DEX closes and agent health</title>
+            <desc id="chart-desc">
+              A straight Aave loan price across the weekend, hourly DEX closes beside it, a snap at reopen,
+              and guarded versus control health against the liquidation line at 1.0.
+            </desc>
+            <defs>
+              <clipPath id="reveal-clip">
+                <rect id="reveal-rect" x="0" y="0" width="720" height="420" />
+              </clipPath>
+            </defs>
+            <g id="chart-static"></g>
+            <g id="chart-reveal" clip-path="url(#reveal-clip)"></g>
+            <g id="chart-overlay"></g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="attack" aria-labelledby="attack-heading">
+        <h2 id="attack-heading">Test the repayment rule</h2>
+        <p class="section-note">
+          Pick a recorded weekend and a starting health factor. Below 1.0, the loan can be liquidated.
+        </p>
+        <div class="controls">
+          <label class="field">
+            <span>Weekend</span>
+            <select data-testid="pick-weekend" id="pick-weekend"></select>
+          </label>
+          <label class="field">
+            <span>Starting health</span>
+            <input
+              data-testid="pick-health"
+              id="pick-health"
+              type="number"
+              min="1.00"
+              max="1.20"
+              step="0.0001"
+            />
+          </label>
+        </div>
+        <p class="sim-source" data-testid="sim-source">Rule math on recorded prices.</p>
+        <dl class="facts sim-facts">
+          <div>
+            <dt>Action</dt>
+            <dd data-testid="sim-action"></dd>
+          </div>
+          <div>
+            <dt>Repay</dt>
+            <dd><span class="num" data-testid="sim-repay"></span> USDC</dd>
+          </div>
+          <div>
+            <dt>Guarded health</dt>
+            <dd><span class="num guarded" data-testid="sim-guarded-hf"></span></dd>
+          </div>
+          <div>
+            <dt>Control health</dt>
+            <dd><span class="num" data-testid="sim-control-hf"></span></dd>
+          </div>
+        </dl>
+        <p class="sim-plain" id="sim-plain"></p>
+        <p class="sim-across" data-testid="sim-across" id="sim-across"></p>
+        <p class="sim-fork-note" id="sim-fork-note"></p>
+      </div>
+    </section>
+
+    <section class="recorded" aria-labelledby="recorded-heading">
+      <h2 id="recorded-heading">Repaying with borrowed USDC</h2>
+      <p class="section-note">
+        The first fork comparison uses the 6 November NVDAc weekend. The guarded agent uses borrowed USDC here. The control takes the same loan and makes no early repayment.
+      </p>
+      <div class="run-grid">
+        <div class="run-col">
+          <h3>Guarded</h3>
+          <dl class="facts">
+            <div>
+              <dt>Repay</dt>
+              <dd><span class="num" data-testid="receipt-guarded-repay"></span> USDC</dd>
+            </div>
+            <div>
+              <dt>Health after reopen</dt>
+              <dd><span class="num" data-testid="receipt-guarded-hf"></span></dd>
+            </div>
+            <div>
+              <dt>Liquidation</dt>
+              <dd class="result" data-testid="receipt-guarded-result"></dd>
+            </div>
+            <div>
+              <dt>Stock kept</dt>
+              <dd><span class="num" data-testid="receipt-guarded-kept"></span> NVDAc</dd>
+            </div>
+          </dl>
+        </div>
+        <div class="run-col">
+          <h3>Control</h3>
+          <dl class="facts">
+            <div>
+              <dt>Repay</dt>
+              <dd data-testid="receipt-control-repay">No rule</dd>
+            </div>
+            <div>
+              <dt>Health after reopen</dt>
+              <dd><span class="num" data-testid="receipt-control-hf"></span></dd>
+            </div>
+            <div>
+              <dt>Liquidation</dt>
+              <dd class="result bad" data-testid="receipt-control-result"></dd>
+            </div>
+            <div>
+              <dt>Stock kept</dt>
+              <dd><span class="num" data-testid="receipt-control-kept"></span> NVDAc</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+      <dl class="facts price-facts">
+        <div>
+          <dt>Frozen loan price</dt>
+          <dd><span class="num" data-testid="receipt-frozen"></span></dd>
+        </div>
+        <div>
+          <dt>Reopen price</dt>
+          <dd><span class="num" data-testid="receipt-reopen"></span></dd>
+        </div>
+      </dl>
+      <button type="button" class="replay" data-testid="replay" id="replay-btn">Replay</button>
+    </section>
+
+    <section class="recorded" data-testid="earned" aria-labelledby="earned-heading">
+      <h2 id="earned-heading">Repaying from earned income</h2>
+      <p class="section-note">
+        Fork result for the same 6 November weekend. The agent moves its borrowed USDC out, sells weekend quotes for USDC via x402, then uses the proceeds to repay. A stand-in buyer pays 0.05 USDC per quote.
+      </p>
+      <div class="run-grid">
+        <div class="run-col">
+          <h3>With quote income</h3>
+          <dl class="facts">
+            <div>
+              <dt>Quotes sold</dt>
+              <dd data-testid="earned-funded-sales"></dd>
+            </div>
+            <div>
+              <dt>Income</dt>
+              <dd><span class="num" data-testid="earned-funded-income"></span> USDC</dd>
+            </div>
+            <div>
+              <dt>Debt repaid</dt>
+              <dd><span class="num" data-testid="earned-funded-repaid"></span> USDC</dd>
+            </div>
+            <div>
+              <dt>Health after reopen</dt>
+              <dd><span class="num" data-testid="earned-funded-health"></span></dd>
+            </div>
+            <div>
+              <dt>Liquidation</dt>
+              <dd class="result" data-testid="earned-funded-liquidation"></dd>
+            </div>
+            <div>
+              <dt>NVDAc kept</dt>
+              <dd><span class="num" data-testid="earned-funded-kept"></span> NVDAc</dd>
+            </div>
+          </dl>
+        </div>
+        <div class="run-col">
+          <h3>Income removed</h3>
+          <dl class="facts">
+            <div>
+              <dt>Quotes sold</dt>
+              <dd data-testid="earned-none-sales"></dd>
+            </div>
+            <div>
+              <dt>Income</dt>
+              <dd><span class="num" data-testid="earned-none-income"></span> USDC</dd>
+            </div>
+            <div>
+              <dt>Debt repaid</dt>
+              <dd><span class="num" data-testid="earned-none-repaid"></span> USDC</dd>
+            </div>
+            <div>
+              <dt>Health after reopen</dt>
+              <dd><span class="num" data-testid="earned-none-health"></span></dd>
+            </div>
+            <div>
+              <dt>Liquidation</dt>
+              <dd class="result bad" data-testid="earned-none-liquidation"></dd>
+            </div>
+            <div>
+              <dt>NVDAc kept</dt>
+              <dd><span class="num" data-testid="earned-none-kept"></span> NVDAc</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <section class="loan-slot" data-testid="real-loan-slot" aria-labelledby="loan-heading">
+      <h2 id="loan-heading">Mainnet status</h2>
+      <p>No real loan yet.</p>
+    </section>
+
+    <section class="limits" data-testid="limits" aria-labelledby="limits-heading">
+      <h2 id="limits-heading">Limits</h2>
+      <p>This ran on a mainnet fork with a replayed reopen.</p>
+      <p>The collateral token and price feed are stand-ins.</p>
+      <p>Whether an agent wallet can hold real NVDAc is unverified.</p>
+      <p>The x402 server and facilitator are local.</p>
+      <p>The 6 Nov guarded and control run repays from borrowed USDC.</p>
+      <p>All 518 quote sales came from one stand-in buyer. Customer demand and repayment economics remain untested. The fork supplied the gas.</p>
+      <p>The fork receipt has no repay time. The chart draws the repay when the forecast reads its last Sunday price.</p>
+      <p>The forecast band is in-sample, measured on the same recorded weekends.</p>
+      <p>
+        The fork receipt and rule math differ slightly in the fourth decimal, so the two are labelled separately.
+      </p>
+    </section>
+    <noscript><p>Enable JavaScript to load the replay and its results.</p></noscript>
+  </main>
+  <script src="data.js"></script>
+  <script src="engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

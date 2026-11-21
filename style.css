@@ -1,0 +1,377 @@
+@font-face {
+  font-family: "Bricolage Grotesque";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/bricolage-grotesque-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Bricolage Grotesque";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("fonts/bricolage-grotesque-latin-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2");
+}
+
+:root {
+  --ink: #0a0a0a;
+  --paper: #ffffff;
+  --base: #0052ff;
+  --liq: #c1121f;
+  --pad: clamp(0.75rem, 2.2vw, 1.75rem);
+  --max: 1120px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: auto;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-weight: 400;
+  font-size: 1.0625rem;
+  line-height: 1.45;
+  overflow-x: hidden;
+}
+
+.page {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: var(--pad);
+  padding-bottom: 4rem;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  margin: 0 0 0.45rem;
+  color: var(--ink);
+}
+
+h1 {
+  font-size: clamp(1.75rem, 4.5vw, 2.5rem);
+  line-height: 1.05;
+  margin-bottom: 0.4rem;
+}
+
+h2 {
+  font-size: clamp(1.15rem, 2.5vw, 1.35rem);
+  margin-top: 0;
+}
+
+.recorded h2,
+.loan-slot h2,
+.limits h2 {
+  margin-top: 2.5rem;
+}
+
+h3 {
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+
+.intro {
+  margin-bottom: 0.75rem;
+}
+
+.lede,
+.section-note,
+.sim-source,
+.sim-plain,
+.sim-across,
+.sim-fork-note,
+.limits p,
+.loan-slot p {
+  margin: 0 0 0.75rem;
+  color: var(--ink);
+  max-width: 40rem;
+}
+
+.judge-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.25rem;
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+}
+
+.judge-links a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.judge-links a:first-child {
+  color: var(--base);
+  font-weight: 700;
+}
+
+.view-replay .rule-link {
+  display: none;
+}
+.num,
+select,
+input[type="number"] {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 0.25rem 0 0;
+}
+
+.chart-panel {
+  background: var(--paper);
+}
+
+.chart-wrap {
+  width: 100%;
+  overflow: hidden;
+}
+
+.frozen-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+}
+
+.attack h2 {
+  margin-top: 0;
+}
+
+.attack .section-note {
+  margin-bottom: 0.5rem;
+}
+
+.run-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem 2rem;
+  margin: 1.25rem 0;
+}
+
+.facts {
+  margin: 0;
+  padding: 0;
+}
+
+.facts > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.35rem 1rem;
+  padding: 0.45rem 0;
+  border-top: 1px solid var(--ink);
+}
+
+.facts > div:last-child {
+  border-bottom: 1px solid var(--ink);
+}
+
+.facts dt {
+  margin: 0;
+  font-weight: 400;
+}
+
+.facts dd {
+  margin: 0;
+  text-align: right;
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-weight: 400;
+  color: var(--ink);
+}
+
+.facts dd .num {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 500;
+}
+
+.facts dd.result {
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-weight: 400;
+}
+
+.price-facts {
+  margin: 1rem 0 1.25rem;
+}
+
+.guarded {
+  color: var(--base);
+}
+
+.bad {
+  color: var(--liq);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  margin: 0.5rem 0 0.75rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: min(100%, 12rem);
+  flex: 1 1 11rem;
+}
+
+.field span {
+  color: var(--ink);
+}
+
+select,
+input[type="number"],
+.replay {
+  min-height: 44px;
+  font-size: 1rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  border-radius: 0;
+  padding: 0.55rem 0.75rem;
+  width: 100%;
+}
+
+.replay {
+  width: auto;
+  min-width: 8rem;
+  cursor: pointer;
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-weight: 700;
+  padding-inline: 1.25rem;
+}
+
+.replay:focus-visible,
+select:focus-visible,
+input[type="number"]:focus-visible,
+.limits-pointer a:focus-visible {
+  outline: 2px solid var(--base);
+  outline-offset: 2px;
+}
+
+.sim-source {
+  font-weight: 700;
+}
+
+.limits {
+  margin-top: 2.5rem;
+}
+
+.limits p {
+  margin-bottom: 0.55rem;
+}
+
+/* Phone: sticky chart, controls scroll under it */
+@media (max-width: 899px) {
+  .chart-panel {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    max-height: 40vh;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--ink);
+  }
+
+  .chart-wrap {
+    max-height: calc(40vh - 0.35rem);
+  }
+
+  .frozen-chart {
+    max-height: calc(40vh - 0.35rem);
+  }
+
+  .controls .field {
+    scroll-margin-top: calc(40vh + 0.5rem);
+  }
+
+  .run-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Desktop: chart left, attack right, stage in first viewport */
+@media (min-width: 900px) {
+  .intro {
+    margin-bottom: 0.5rem;
+  }
+
+  .lede {
+    margin-bottom: 0.35rem;
+  }
+
+  .stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(17rem, 0.9fr);
+    gap: 1.25rem 1.75rem;
+    align-items: start;
+    max-height: calc(900px - 7.5rem);
+  }
+
+  .chart-panel {
+    min-height: 0;
+    height: 100%;
+  }
+
+  .chart-wrap {
+    height: min(520px, calc(900px - 9rem));
+  }
+
+  .frozen-chart {
+    height: 100%;
+    max-height: 100%;
+  }
+
+  .attack {
+    max-height: calc(900px - 8rem);
+    overflow: auto;
+    padding-right: 0.15rem;
+  }
+
+  .attack .section-note {
+    font-size: 0.98rem;
+  }
+
+  .sim-plain,
+  .sim-across,
+  .sim-fork-note {
+    font-size: 0.98rem;
+  }
+}
+
+/* Alternative A: the recorded run with no judge controls */
+.view-replay .attack {
+  display: none;
+}
+
+.view-replay .stage {
+  display: block;
+}
