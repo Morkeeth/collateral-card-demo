@@ -1,25 +1,29 @@
-# Reproduce the NVDAc comparison
+# Reproduce the forecast and loan replay
+
+## Verify the forecast and saved loan replay offline
+
+From the repository root with Python 3.10 or later:
+
+```sh
+python3 -B proof/verify_judge.py
+```
+
+The first check rebuilds the saved forecast and backtest from the normalized source snapshots. The second compares the saved receipts with the judge display, checks the pinned block and tests the simulated payment and repayment amounts. The command reads local files and executes no chain calls. The optional fork steps below are a separate experiment.
+
+The [weekend backtest source manifest](SOURCE-MANIFEST.md) lists the saved observations, the offline arithmetic check and two optional public source reads.
+
+## Simulated payment replay
 
 The judge page displays saved results from a local Base mainnet fork. The interactive rule and chart use recorded prices in the browser. [recorded-comparison.json](recorded-comparison.json) contains the same outcome fields as the page bundle, with local RPC addresses omitted.
 
 The experiment replays the NVDAc weekend starting 6 November 2026. The oracle stand-in moves from $187.9661 to $183.0326. The agent supplies 2 stand-in NVDAc with target starting health 1.0042. Both trials move the borrowed USDC out of the agent's balance before any sales. One simulated buyer makes 518 x402 payments of 0.05 USDC to a demo endpoint in the paid trial. The endpoint returns the acknowledgment `{"ok":true}` and delivers no forecast. The control makes zero sales. [inputs.json](inputs.json) fixes these inputs and records the forecast estimate, forecast band, and collateral factor.
 
-| Recorded outcome | Payment income | Income removed |
+| Recorded outcome | Simulated payment income | Income removed |
 | --- | ---: | ---: |
 | Income | 25.90 USDC | 0 USDC |
 | Debt repaid | 25.87 USDC | 0 USDC |
 | Health after the replayed reopen | 1.0851 | 0.9780 |
 | Liquidation attempt | Refused | Succeeded |
-
-## Check the saved comparison offline
-
-From the repository root with Python 3.10 or later:
-
-```sh
-python3 proof/verify.py
-```
-
-This compares the redacted receipt fields and input row against the bundled judge data and checks the revenue arithmetic.
 
 ## Rerun on a local fork
 

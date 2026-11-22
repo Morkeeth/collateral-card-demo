@@ -11,12 +11,14 @@
     <header class="intro">
       <h1>Collateral Card</h1>
       <p class="lede">
-        A stock-backed loan can look healthy while its oracle price is frozen. As the stock token trades through the weekend, an agent can watch the gap and use USDC earned through x402 payments to cut debt before the oracle updates.
+        A stock-backed loan can look healthy while its oracle price is frozen. As the stock token trades through the weekend, an agent can watch the gap and decide whether to cut debt before the oracle updates.
       </p>
-      <p class="lede">
-        In a Base mainnet fork replay, the loan survived with x402 payment income. Removing that income led to liquidation.
-      </p>
+      <section aria-labelledby="offline-heading">
+        <h2 id="offline-heading">Verify offline</h2>
+        <p class="section-note">From the repository root with Python 3.10 or later, run <code>python3 -B proof/verify_judge.py</code> to rebuild the forecast and verify the saved replay receipts.</p>
+      </section>
       <nav class="judge-links" aria-label="Explore the demo">
+        <a href="https://github.com/Morkeeth/collateral-card-demo#verify-offline">Offline check instructions</a>
         <a href="#earned-heading">Compare the two loans</a>
         <a class="rule-link" href="#attack-heading">Test the rule</a>
         <a href="#limits-heading">Replay limits</a>
@@ -155,13 +157,13 @@
     </section>
 
     <section class="recorded" data-testid="earned" aria-labelledby="earned-heading">
-      <h2 id="earned-heading">Repaying from earned income</h2>
+      <h2 id="earned-heading">Simulated payment replay</h2>
       <p class="section-note">
-        Recorded fork result for the same 6 November weekend. The agent moves its borrowed USDC out, collects simulated x402 payments at a demo endpoint, then uses the proceeds to repay. A stand-in buyer pays 0.05 USDC per request, and the endpoint returns only an acknowledgment.
+        Saved results from a local Base mainnet fork of the 6 November NVDAc weekend, using stand-in collateral. The agent moves its borrowed USDC out, then repays with proceeds from simulated x402 payments. One simulated buyer pays 0.05 USDC per request and the demo endpoint returns an acknowledgment.
       </p>
       <div class="run-grid">
         <div class="run-col">
-          <h3>With payment income</h3>
+          <h3>With simulated x402 payments</h3>
           <dl class="facts">
             <div>
               <dt>Paid requests</dt>
@@ -240,6 +242,7 @@
       <p>The 6 Nov guarded and control run repays from borrowed USDC.</p>
       <p>All 518 payments came from one stand-in buyer. The endpoint returned an acknowledgment and delivered no forecast. Customer demand and repayment economics remain untested. The fork supplied the gas.</p>
       <p>The fork receipt has no repay time. The chart draws the repay when the forecast reads its last Sunday price.</p>
+      <p>The chart plots candle closes at their opening times. The last plotted candle closes after the oracle reopens. The forecast uses the earlier Sunday close.</p>
       <p>The forecast band is in-sample, measured on the same recorded weekends.</p>
       <p>
         The fork receipt and rule math differ slightly in the fourth decimal, so the two are labelled separately.
