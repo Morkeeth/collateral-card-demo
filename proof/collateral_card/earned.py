@@ -1,4 +1,4 @@
-"""Local fork: repay a Mag7 loan from x402 quote income after ring-fencing the borrow."""
+"""Local fork: repay a Mag7 loan from x402 payment income after ring-fencing the borrow."""
 from __future__ import annotations
 
 import json

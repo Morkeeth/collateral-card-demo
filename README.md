@@ -42,7 +42,7 @@ To rerun both loans on a local fork, follow [the reproduction steps](proof/READM
 
 - The results come from a local fork with a replayed oracle update. No real loan has been taken.
 - The Aave and USDC contracts are the fork's. The collateral token and price feed are stand-ins.
-- All 518 payments came from one simulated buyer. The demo endpoint, at the route `/quote`, returns the acknowledgment `{"ok":true}` and delivers no forecast. Customer demand and repayment economics are untested.
+- All 518 payments came from one simulated buyer. The demo endpoint, at the route `/quote`, returns the acknowledgment `{"ok":true}` and delivers no forecast. Some code and receipt labels still use the word "quote". Customer demand and repayment economics are untested.
 - The x402 server and facilitator run locally.
 - At the replayed starting health, the rule repaid on 11 of 24 token-weekends (3 tokens over 8 calendar weekends). One repayment was needed and 10 were false alarms.
 - The weekend forecaster that produced the recorded estimate is outside this repository. Its output is saved in [inputs.json](proof/inputs.json).
