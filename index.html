@@ -11,16 +11,16 @@
     <header class="intro">
       <h1>Collateral Card</h1>
       <p class="lede">
-        A stock-backed loan can look healthy while its oracle price is frozen. As the stock token trades through the weekend, an agent can watch the gap and use its paid quote income to cut debt before the oracle updates.
+        A stock-backed loan can look healthy while its oracle price is frozen. As the stock token trades through the weekend, an agent can watch the gap and use USDC earned through x402 payments to cut debt before the oracle updates.
       </p>
       <p class="lede">
-        In a Base mainnet fork replay, the loan survived with quote income. Removing that income led to liquidation.
+        In a Base mainnet fork replay, the loan survived with x402 payment income. Removing that income led to liquidation.
       </p>
       <nav class="judge-links" aria-label="Explore the demo">
         <a href="#earned-heading">Compare the two loans</a>
         <a class="rule-link" href="#attack-heading">Test the rule</a>
         <a href="#limits-heading">Replay limits</a>
-        <a data-testid="source-link" href="https://github.com/Morkeeth/collateral-card-demo#readme">Code and proof</a>
+        <a data-testid="source-link" href="https://github.com/Morkeeth/collateral-card-demo/blob/main/README.md">Code and proof</a>
       </nav>
     </header>
 
@@ -157,14 +157,14 @@
     <section class="recorded" data-testid="earned" aria-labelledby="earned-heading">
       <h2 id="earned-heading">Repaying from earned income</h2>
       <p class="section-note">
-        Recorded fork result for the same 6 November weekend. The agent moves its borrowed USDC out, sells weekend quotes for USDC via x402, then uses the proceeds to repay. A stand-in buyer pays 0.05 USDC per quote.
+        Recorded fork result for the same 6 November weekend. The agent moves its borrowed USDC out, collects simulated x402 payments at a demo endpoint, then uses the proceeds to repay. A stand-in buyer pays 0.05 USDC per request, and the endpoint returns only an acknowledgment.
       </p>
       <div class="run-grid">
         <div class="run-col">
-          <h3>With quote income</h3>
+          <h3>With payment income</h3>
           <dl class="facts">
             <div>
-              <dt>Quotes sold</dt>
+              <dt>Paid requests</dt>
               <dd data-testid="earned-funded-sales"></dd>
             </div>
             <div>
@@ -193,7 +193,7 @@
           <h3>Income removed</h3>
           <dl class="facts">
             <div>
-              <dt>Quotes sold</dt>
+              <dt>Paid requests</dt>
               <dd data-testid="earned-none-sales"></dd>
             </div>
             <div>
@@ -238,7 +238,7 @@
       <p>Whether an agent wallet can hold real NVDAc is unverified.</p>
       <p>The x402 server and facilitator are local.</p>
       <p>The 6 Nov guarded and control run repays from borrowed USDC.</p>
-      <p>All 518 quote sales came from one stand-in buyer. Customer demand and repayment economics remain untested. The fork supplied the gas.</p>
+      <p>All 518 payments came from one stand-in buyer. The endpoint returned an acknowledgment and delivered no forecast. Customer demand and repayment economics remain untested. The fork supplied the gas.</p>
       <p>The fork receipt has no repay time. The chart draws the repay when the forecast reads its last Sunday price.</p>
       <p>The forecast band is in-sample, measured on the same recorded weekends.</p>
       <p>

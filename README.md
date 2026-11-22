@@ -1,6 +1,6 @@
 # Collateral Card
 
-A stock-backed loan can look healthy while its lending oracle still shows Friday's price. Collateral Card is an agent that watches the weekend gap and uses USDC earned from paid x402 quotes to reduce its debt before the oracle updates.
+A stock-backed loan can look healthy while its lending oracle still shows Friday's price. Collateral Card is an agent that watches the weekend gap and uses USDC earned through x402 payments to reduce its debt before the oracle updates.
 
 **Open the demo:** https://morkeeth.github.io/collateral-card-demo/
 
@@ -10,9 +10,9 @@ No wallet, account or install is needed. Entry for Base Stocks Maxxing, Agentic 
 
 This is a replay of the NVDAc weekend of 6 November 2026 on a local Base mainnet fork.
 
-| | With quote income | Income removed |
+| | With payment income | Income removed |
 | --- | ---: | ---: |
-| Quotes sold | 518 | 0 |
+| Simulated x402 payments | 518 | 0 |
 | Income | 25.90 USDC | 0 USDC |
 | Debt repaid | 25.87 USDC | 0 USDC |
 | Health after the oracle update | 1.0851 | 0.9780 |
@@ -23,8 +23,8 @@ This is a replay of the NVDAc weekend of 6 November 2026 on a local Base mainnet
 All of this work was written between 20 and 22 November 2026:
 
 - A repayment rule that compares the market price with a frozen lending price ([rule.py](proof/collateral_card/rule.py)).
-- An x402 v2 paid quote flow ([x402.py](proof/collateral_card/x402.py)).
-- A fork replay that repays an Aave Mag7 loan from quote income ([earned.py](proof/collateral_card/earned.py)).
+- An x402 v2 payment flow for a demo endpoint ([x402.py](proof/collateral_card/x402.py)).
+- A fork replay that repays an Aave Mag7 loan from x402 payment income ([earned.py](proof/collateral_card/earned.py)).
 - A guard that refuses any write path outside local loopback ([guard.py](proof/collateral_card/guard.py)).
 - The interactive judge page in this repository.
 
@@ -42,7 +42,7 @@ To rerun both loans on a local fork, follow [the reproduction steps](proof/READM
 
 - The results come from a local fork with a replayed oracle update. No real loan has been taken.
 - The Aave and USDC contracts are the fork's. The collateral token and price feed are stand-ins.
-- All 518 quote sales came from one simulated buyer. Customer demand and repayment economics are untested.
+- All 518 payments came from one simulated buyer. The demo endpoint, at the route `/quote`, returns the acknowledgment `{"ok":true}` and delivers no forecast. Customer demand and repayment economics are untested.
 - The x402 server and facilitator run locally.
-- At the replayed starting health, the rule repaid on 11 of 24 recorded weekends. One repayment was needed and 10 were false alarms.
+- At the replayed starting health, the rule repaid on 11 of 24 token-weekends (3 tokens over 8 calendar weekends). One repayment was needed and 10 were false alarms.
 - The weekend forecaster that produced the recorded estimate is outside this repository. Its output is saved in [inputs.json](proof/inputs.json).

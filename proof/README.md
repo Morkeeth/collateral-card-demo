@@ -2,9 +2,9 @@
 
 The judge page displays saved results from a local Base mainnet fork. The interactive rule and chart use recorded prices in the browser. [recorded-comparison.json](recorded-comparison.json) contains the same outcome fields as the page bundle, with local RPC addresses omitted.
 
-The experiment replays the NVDAc weekend starting 6 November 2026. The oracle stand-in moves from $187.9661 to $183.0326. The agent supplies 2 stand-in NVDAc with target starting health 1.0042. Both trials move the borrowed USDC out of the agent's balance before any sales. One simulated buyer pays 0.05 USDC for each of 518 quotes in the paid trial. The control makes zero sales. [inputs.json](inputs.json) fixes these inputs and records the forecast estimate, forecast band, and collateral factor.
+The experiment replays the NVDAc weekend starting 6 November 2026. The oracle stand-in moves from $187.9661 to $183.0326. The agent supplies 2 stand-in NVDAc with target starting health 1.0042. Both trials move the borrowed USDC out of the agent's balance before any sales. One simulated buyer makes 518 x402 payments of 0.05 USDC to a demo endpoint in the paid trial. The endpoint returns the acknowledgment `{"ok":true}` and delivers no forecast. The control makes zero sales. [inputs.json](inputs.json) fixes these inputs and records the forecast estimate, forecast band, and collateral factor.
 
-| Recorded outcome | Quote income | Income removed |
+| Recorded outcome | Payment income | Income removed |
 | --- | ---: | ---: |
 | Income | 25.90 USDC | 0 USDC |
 | Debt repaid | 25.87 USDC | 0 USDC |

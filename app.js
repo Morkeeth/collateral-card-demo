@@ -155,7 +155,15 @@
   }
 
   function weekendWord(n) {
-    return n === 1 ? "weekend" : "weekends";
+    return n === 1 ? "token-weekend" : "token-weekends";
+  }
+
+  function distinctCount(rows, key) {
+    var seen = {};
+    rows.forEach(function (row) {
+      seen[row[key]] = true;
+    });
+    return Object.keys(seen).length;
   }
 
   function neededPhrase(n) {
@@ -171,7 +179,11 @@
     el.innerHTML =
       "Across all " +
       summary.n +
-      " weekends at this health, the rule repaid on " +
+      " token-weekends (" +
+      distinctCount(data.rows, "symbol") +
+      " tokens over " +
+      distinctCount(data.rows, "weekend_friday") +
+      " calendar weekends) at this health, the rule repaid on " +
       '<span class="num" data-testid="sim-repaid-count">' +
       summary.repaid_weekends +
       "</span> " +
