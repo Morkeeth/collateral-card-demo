@@ -1,0 +1,17 @@
+{
+  "fork_block": 60423882,
+  "fork_block_hash": "0xb30152495570ca6f539c7cba61d14be4cedd5a9fb7dcf3d658eae3ff6796a1b8",
+  "chain_id": 8453,
+  "weekend_friday": "2026-11-06",
+  "symbol": "NVDAc",
+  "frozen": 187.9661,
+  "reopen": 183.0326,
+  "predicted_pct": -5.05,
+  "band_pts": 0.71,
+  "collateral_factor": 0.7,
+  "target_starting_health": 1.0042,
+  "starting_collateral_raw": 200000000,
+  "quote_price_raw": 50000,
+  "paid_sales": 518,
+  "control_sales": 0
+}
