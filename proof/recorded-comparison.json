@@ -1,0 +1,38 @@
+{
+  "paid": {
+    "weekend": "2026-11-06",
+    "token": "NVDAc",
+    "chain_id": 8453,
+    "frozen_price": 187.9661,
+    "reopen_price": 183.0326,
+    "sales": 518,
+    "price_raw": 50000,
+    "agent_usdc_after_ringfence_raw": 0,
+    "income_raw": 25900000,
+    "repaid_raw": 25866311,
+    "repay_tx_status": 1,
+    "hf_after_reopen": 1.0850721183524292,
+    "liquidation_attempt": "refused",
+    "collateral_after_raw": 200000000,
+    "remote_writes": 0,
+    "collateral_before_raw": 200000000
+  },
+  "control": {
+    "weekend": "2026-11-06",
+    "token": "NVDAc",
+    "chain_id": 8453,
+    "frozen_price": 187.9661,
+    "reopen_price": 183.0326,
+    "sales": 0,
+    "price_raw": 50000,
+    "agent_usdc_after_ringfence_raw": 0,
+    "income_raw": 0,
+    "repaid_raw": 0,
+    "repay_tx_status": null,
+    "hf_after_reopen": 0.9779683518269511,
+    "liquidation_attempt": "liquidated",
+    "collateral_after_raw": 49588180,
+    "remote_writes": 0,
+    "collateral_before_raw": 200000000
+  }
+}

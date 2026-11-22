@@ -1,0 +1,42 @@
+{
+  "paid": {
+    "fork_block": 60423882,
+    "fork_block_hash": "0xb30152495570ca6f539c7cba61d14be4cedd5a9fb7dcf3d658eae3ff6796a1b8",
+    "weekend": "2026-11-06",
+    "token": "NVDAc",
+    "chain_id": 8453,
+    "frozen_price": 187.9661,
+    "reopen_price": 183.0326,
+    "sales": 518,
+    "price_raw": 50000,
+    "agent_usdc_after_ringfence_raw": 0,
+    "income_raw": 25900000,
+    "repaid_raw": 25866300,
+    "repay_tx_status": 1,
+    "hf_after_reopen": 1.085072121960309,
+    "liquidation_attempt": "refused",
+    "collateral_after_raw": 200000000,
+    "remote_writes": 0,
+    "collateral_before_raw": 200000000
+  },
+  "control": {
+    "fork_block": 60423882,
+    "fork_block_hash": "0xb30152495570ca6f539c7cba61d14be4cedd5a9fb7dcf3d658eae3ff6796a1b8",
+    "weekend": "2026-11-06",
+    "token": "NVDAc",
+    "chain_id": 8453,
+    "frozen_price": 187.9661,
+    "reopen_price": 183.0326,
+    "sales": 0,
+    "price_raw": 50000,
+    "agent_usdc_after_ringfence_raw": 0,
+    "income_raw": 0,
+    "repaid_raw": 0,
+    "repay_tx_status": null,
+    "hf_after_reopen": 0.9779683510279074,
+    "liquidation_attempt": "liquidated",
+    "collateral_after_raw": 49588180,
+    "remote_writes": 0,
+    "collateral_before_raw": 200000000
+  }
+}

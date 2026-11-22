@@ -156,7 +156,7 @@
     <section class="recorded" data-testid="earned" aria-labelledby="earned-heading">
       <h2 id="earned-heading">Repaying from earned income</h2>
       <p class="section-note">
-        Fork result for the same 6 November weekend. The agent moves its borrowed USDC out, sells weekend quotes for USDC via x402, then uses the proceeds to repay. A stand-in buyer pays 0.05 USDC per quote.
+        Recorded fork result for the same 6 November weekend. The agent moves its borrowed USDC out, sells weekend quotes for USDC via x402, then uses the proceeds to repay. A stand-in buyer pays 0.05 USDC per quote.
       </p>
       <div class="run-grid">
         <div class="run-col">
@@ -218,6 +218,11 @@
           </dl>
         </div>
       </div>
+      <p class="section-note">
+        This page displays saved results. See the
+        <a href="proof/recorded-comparison.json">recorded comparison</a> and the
+        <a href="https://github.com/Morkeeth/collateral-card-demo/tree/main/proof">inputs and reproduction steps</a>.
+      </p>
     </section>
 
     <section class="loan-slot" data-testid="real-loan-slot" aria-labelledby="loan-heading">
@@ -227,7 +232,7 @@
 
     <section class="limits" data-testid="limits" aria-labelledby="limits-heading">
       <h2 id="limits-heading">Limits</h2>
-      <p>This ran on a mainnet fork with a replayed reopen.</p>
+      <p>The saved loan results came from a local Base mainnet fork with a replayed reopen. The page independently calculates rule outcomes from recorded prices.</p>
       <p>The collateral token and price feed are stand-ins.</p>
       <p>Whether an agent wallet can hold real NVDAc is unverified.</p>
       <p>The x402 server and facilitator are local.</p>
