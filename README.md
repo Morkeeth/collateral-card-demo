@@ -37,7 +37,9 @@ A buyer gets the last frozen NVDAc Aave price and the closed Base pool candle wi
 python3 -B proof/run_sepolia.py --out /tmp/collateral-paid-quote.json
 ```
 
-The fork uses public read-only Base Sepolia RPC and local dev accounts. The [browser receipt](demo/paid-quote.json) is a captured run. The prices are historical Base mainnet observations. A public Base Sepolia transaction would require test USDC for the buyer, Sepolia ETH for the relayer, wallet signatures, and a testnet relayer wired to the payment endpoint.
+The fork uses public read-only Base Sepolia RPC and local development accounts. The prices are historical Base mainnet observations. [Fork run receipt](demo/paid-quote.json)
+
+On public Base Sepolia, the desk settled a 0.05 test USDC price check, refused the repeat payment, and recorded a decision to cut a simulated $40.00 spend to $26.31. [Contract deployment](https://base-sepolia.blockscout.com/tx/0x432a35d82a008b510d21a2586bca0faa1cfc0574c11ab7f2b746c3ee898ab385) · [Test USDC payment](https://base-sepolia.blockscout.com/tx/0x17e720bc2436cde2f4162902da4382e97202644ff009b1686b3817dc3bcea7bf) · [Recorded spend decision](https://base-sepolia.blockscout.com/tx/0xccbaea0f7e4c435a83d0ef4afadf6f6023c8c9b233f0dc686dbebf4418766f49) · [Public run receipt](demo/public-sepolia.json)
 
 ## Simulated payment replay
 
