@@ -103,8 +103,39 @@ def call(rpc, to, sig, *args):
     return cast(["call", to, sig, *args, "--rpc-url", rpc]).stdout.strip()
 
 
-def uint(rpc, to, sig, *args):
-    return int(call(rpc, to, sig, *args).split()[0])
+def uint(rpc, to, sig, *args, block=None):
+    extra = ["--block", str(block)] if block is not None else []
+    for attempt in range(6):
+        try:
+            return int(cast(["call", to, sig, *args, *extra, "--rpc-url", rpc]).stdout.split()[0])
+        except RuntimeError:
+            if attempt == 5:
+                raise
+            time.sleep(2)
+
+
+def block_number(rpc):
+    return int(_rpc(rpc, "eth_blockNumber", []), 16)
+
+
+def wait_block(rpc, n, timeout=60):
+    deadline = time.monotonic() + timeout
+    while (latest := block_number(rpc)) < n:
+        if time.monotonic() > deadline:
+            raise RuntimeError(f"RPC stuck below block {n}.")
+        time.sleep(1)
+    return latest
+
+
+def wait_receipt(rpc, tx, timeout=90):
+    deadline = time.monotonic() + timeout
+    while True:
+        receipt = _rpc(rpc, "eth_getTransactionReceipt", [tx])
+        if receipt:
+            return receipt
+        if time.monotonic() > deadline:
+            raise RuntimeError(f"No receipt for {tx}.")
+        time.sleep(2)
 
 
 def eth_balance(rpc, addr):
@@ -217,7 +248,7 @@ def rehearsal_fork(desk, seller):
 
 def run(rpc, desk, seller, state_path, public):
     eth_before = eth_balance(rpc, desk.address)
-    usdc = lambda a: uint(rpc, USDC, "balanceOf(address)(uint256)", a)  # noqa: E731
+    usdc = lambda a, block=None: uint(rpc, USDC, "balanceOf(address)(uint256)", a, block=block)  # noqa: E731
     if eth_before < MIN_GAS_WEI:
         raise SystemExit(f"Desk wallet {desk.address} has {eth_before} wei. Waiting for test ETH.")
     if usdc(desk.address) < X402_AMOUNT:
@@ -226,6 +257,7 @@ def run(rpc, desk, seller, state_path, public):
 
     # 1. The public spend record, deployed once.
     state = json.loads(state_path.read_text()) if public and state_path.exists() else {}
+    state.setdefault("StockDeskLog", None)
     log = state.get("StockDeskLog")
     if log and _rpc(rpc, "eth_getCode", [log, "latest"]) not in ("0x", None):
         txs["deploy"] = state.get("deploy_tx")
@@ -233,17 +265,22 @@ def run(rpc, desk, seller, state_path, public):
         receipt = deploy(rpc, desk)
         log, txs["deploy"] = receipt["contractAddress"], receipt["transactionHash"]
         if public:
-            state_path.write_text(json.dumps({"StockDeskLog": log, "deploy_tx": txs["deploy"]}, indent=2) + "\n")
+            state.update({"StockDeskLog": log, "deploy_tx": txs["deploy"]})
+            state_path.write_text(json.dumps(state, indent=2) + "\n")
     if call(rpc, log, "desk()(address)").lower() != desk.address.lower():
         raise RuntimeError("StockDeskLog does not name the desk wallet as its writer.")
 
     # 2. The paid price check: 402 challenge, signed test USDC authorization, settlement, repeat refused.
+    #    Balances are read at pinned blocks, because the public RPC is load balanced and can lag.
+    if state.get("payment"):
+        raise SystemExit(f"Already paid in {state['payment']['tx']}; see {state_path}. Not paying twice.")
     terms = x402.requirements(seller.address, X402_AMOUNT, network=f"eip155:{CHAIN_ID}", asset=USDC,
                               token_name="USDC")
     server = quote_server(rpc, desk, terms)
     url = f"http://127.0.0.1:{server.server_port}/quote"
     try:
-        buyer0, seller0 = usdc(desk.address), usdc(seller.address)
+        start = block_number(rpc)
+        buyer0, seller0 = usdc(desk.address, start), usdc(seller.address, start)
         challenge, _, challenge_headers = _http_get(url)
         required = x402.decode_header(_header(challenge_headers, x402.HEADER_REQUIRED))
         headers = {x402.HEADER_SIGNATURE: x402.encode_header(sign_payment(rpc, desk, required))}
@@ -252,10 +289,15 @@ def run(rpc, desk, seller, state_path, public):
         if paid != 200 or not settled.get("success"):
             raise RuntimeError(f"Paid check failed ({paid}): {settled.get('errorReason')}")
         txs["payment"] = settled["transaction"]
-        buyer1, seller1 = usdc(desk.address), usdc(seller.address)
+        if public:
+            state["payment"] = {"tx": txs["payment"], "quote": json.loads(quote_body)}
+            state_path.write_text(json.dumps(state, indent=2) + "\n")
+        pay_block = int(wait_receipt(rpc, txs["payment"])["blockNumber"], 16)
+        buyer1, seller1 = usdc(desk.address, pay_block), usdc(seller.address, pay_block)
         retry, _, retry_headers = _http_get(url, headers)
         retry_reason = x402.decode_header(_header(retry_headers, x402.HEADER_RESPONSE) or "e30=").get("errorReason")
-        seller2 = usdc(seller.address)
+        after = wait_block(rpc, pay_block)
+        seller2 = usdc(seller.address, after)
     finally:
         server.shutdown()
         server.server_close()
@@ -263,18 +305,33 @@ def run(rpc, desk, seller, state_path, public):
 
     # 3. The desk's decision for the story spend, recorded on chain with the payment it relied on.
     decision = check_spend(DEMO_BOOK, DEMO_LIMITS, WEEKEND, AS_OF, STORY_SPEND)
-    record = {"decision": decision, "quote": quote, "payment_tx": txs["payment"]}
-    digest = "0x" + hashlib.sha3_256(json.dumps(record, sort_keys=True).encode()).hexdigest()
-    cents = lambda usd: str(round(float(usd) * 100))  # noqa: E731
+    preimage = json.dumps({"decision": decision, "quote": quote, "payment_tx": txs["payment"]}, sort_keys=True)
+    digest = "0x" + hashlib.sha3_256(preimage.encode()).hexdigest()
+    cents = lambda usd: int(round(float(usd) * 100))  # noqa: E731
     allowed = decision.get("allowed_usd", decision["amount_usd"] if decision["action"] == "ALLOW" else "0")
-    count0 = uint(rpc, log, "count()(uint256)")
+    expected = (ACTIONS[decision["action"]], cents(decision["amount_usd"]), cents(allowed), txs["payment"].lower(),
+                decision["reason"])
+    count0 = uint(rpc, log, "count()(uint256)", block=pay_block)
     receipt = send(rpc, desk, log, "record(bytes32,uint8,uint256,uint256,bytes32,string)",
-                   digest, str(ACTIONS[decision["action"]]), cents(decision["amount_usd"]), cents(allowed),
-                   txs["payment"], decision["reason"])
+                   digest, *map(str, expected))
     if int(receipt.get("status", "0x0"), 16) != 1:
         raise RuntimeError(f"Spend record reverted: {receipt.get('error', '')}")
     txs["record"] = receipt["transactionHash"]
-    count1 = uint(rpc, log, "count()(uint256)")
+    if public:
+        state["record_tx"] = txs["record"]
+        state_path.write_text(json.dumps(state, indent=2) + "\n")
+    rec_block = int(receipt["blockNumber"], 16)
+    count1 = uint(rpc, log, "count()(uint256)", block=rec_block)
+    event = receipt.get("logs", [])
+    decoded = None
+    if len(event) == 1 and event[0]["address"].lower() == log.lower():
+        raw = cast(["abi-decode", "--input", "f(uint8,uint256,uint256,bytes32,string)", event[0]["data"]]).stdout
+        lines = [x.strip().split(" [")[0].strip('"') for x in raw.strip().splitlines()]
+        decoded = (int(lines[0]), int(lines[1]), int(lines[2]), lines[3].lower(), lines[4])
+        decoded_receipt = event[0]["topics"][2].lower()
+    gas_wei = sum(int(r.get("gasUsed", "0x0"), 16) * int(r.get("effectiveGasPrice", "0x0"), 16)
+                  + int(r.get("l1Fee", "0x0") or "0x0", 16)
+                  for r in (wait_receipt(rpc, t) for t in txs.values() if t))
 
     checks = {
         "challenge_is_402": challenge == 402,
@@ -283,8 +340,7 @@ def run(rpc, desk, seller, state_path, public):
         "seller_got_exact": seller1 - seller0 == X402_AMOUNT,
         "repeat_refused": retry == 402 and seller2 == seller1,
         "record_added_one": count1 == count0 + 1,
-        "record_event_emitted": len(receipt.get("logs", [])) == 1
-            and receipt["logs"][0]["address"].lower() == log.lower(),
+        "record_event_matches": decoded == expected and decoded_receipt == digest.lower(),
     }
     if not all(checks.values()):
         raise RuntimeError(f"Checks failed: {[k for k, v in checks.items() if not v]}")
@@ -300,6 +356,8 @@ def run(rpc, desk, seller, state_path, public):
                        "price_raw": X402_AMOUNT, "gap_percent": quote.get("pool_minus_lending_percent")},
         "decision": {k: decision[k] for k in ("action", "amount_usd", "allowed_usd", "reason") if k in decision},
         "record_digest_sha3_256": digest,
+        "record_preimage": preimage,
+        "gas_spent_wei": gas_wei,
         "checks": checks,
         "labels": ["testnet only", "historical replay prices", "demo book", "the loan is simulated",
                    "no trades are placed"],
