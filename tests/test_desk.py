@@ -55,6 +55,13 @@ class SpendCheckTest(TestCase):
         d = check_spend(low, DEMO_LIMITS, WEEKEND, AS_OF, "5.00")
         self.assertEqual(d["action"], "REFUSE")
 
+    def test_book_under_the_floor_refuses_even_cash_spends(self):
+        low = Book(positions=DEMO_BOOK.positions, debt_usd="380.00", cash_usd="50.00",
+                   spent_this_week_usd="0")
+        d = check_spend(low, DEMO_LIMITS, WEEKEND, AS_OF, "5.00")
+        self.assertEqual(d["action"], "REFUSE")
+        self.assertIn("Repay", d["reason"])
+
     def test_weekly_cap_refuses_before_health(self):
         d = check_spend(DEMO_BOOK, DEMO_LIMITS, WEEKEND, AS_OF, "60.00")
         self.assertEqual(d["action"], "REFUSE")

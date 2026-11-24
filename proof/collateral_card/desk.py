@@ -161,6 +161,9 @@ def check_spend(book, limits, weekend, as_of_utc, amount_usd):
     if amount > cap_left:
         return {**base, "action": "REFUSE",
                 "reason": f"Over the weekly spend cap. {_usd(cap_left)} USDC left this week."}
+    if _health(weekend_power, debt) < floor:
+        return {**base, "action": "REFUSE",
+                "reason": "Weekend health is already under the floor. Repay before any new spend."}
     if _health(weekend_power, debt + borrow) >= floor:
         return {**base, "action": "ALLOW", "reason": "Weekend health stays above the floor.",
                 "health_after": _hf(_health(weekend_power, debt + borrow))}
