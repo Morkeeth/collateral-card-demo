@@ -19,14 +19,14 @@ from collateral_card.desk import DEMO_BOOK, DEMO_LIMITS, after_reopen, check_spe
 
 WEEKEND = "2026-11-06"
 AS_OF = "2026-11-09T00:05:00Z"
-STORY_SPENDS = ("5.00", "25.00", "60.00")
+STORY_SPENDS = ("5.00", "40.00", "60.00")
 
 
 def receipt():
     return {
         "desk": view(DEMO_BOOK, DEMO_LIMITS, WEEKEND, AS_OF),
         "checks": [check_spend(DEMO_BOOK, DEMO_LIMITS, WEEKEND, AS_OF, usd) for usd in STORY_SPENDS],
-        "after_reopen": after_reopen(DEMO_BOOK, DEMO_LIMITS, WEEKEND, "25.00"),
+        "after_reopen": after_reopen(DEMO_BOOK, DEMO_LIMITS, WEEKEND, "40.00"),
         "labels": ["historical replay", "demo book, not a real wallet", "no trades are placed"],
     }
 

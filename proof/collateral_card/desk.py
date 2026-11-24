@@ -35,7 +35,7 @@ class Limits:
 DEMO_BOOK = Book(
     positions=(("NVDAc", "2"), ("TSLAc", "0.5"), ("AAPLc", "0.5")),
     debt_usd="360.00",
-    cash_usd="40.00",
+    cash_usd="10.00",
     spent_this_week_usd="0",
 )
 DEMO_LIMITS = Limits()
@@ -112,8 +112,9 @@ def view(book, limits, weekend, as_of_utc):
     if weekend_hf < floor:
         breaches.append({"limit": "min_health", "health": _hf(weekend_hf),
                          "effect": "Repay before any new spend."})
-    safe = max(Decimal(0), weekend_power / floor - debt)
-    lender_safe = max(Decimal(0), lender_power / floor - debt)
+    cash = _d(book.cash_usd, "cash_usd")
+    safe = cash + max(Decimal(0), weekend_power / floor - debt).quantize(CENT, rounding=ROUND_DOWN)
+    lender_safe = cash + max(Decimal(0), lender_power / floor - debt).quantize(CENT, rounding=ROUND_DOWN)
     cap_left = max(Decimal(0), _d(limits.weekly_spend_cap_usd, "cap")
                    - _d(book.spent_this_week_usd, "spent"))
     return {
@@ -142,37 +143,40 @@ def view(book, limits, weekend, as_of_utc):
 
 
 def check_spend(book, limits, weekend, as_of_utc, amount_usd):
-    """Decide one spend that the agent would fund by borrowing more USDC."""
+    """Decide one spend. Cash pays first; the rest is borrowed against the stocks."""
     amount = _d(amount_usd, "amount_usd")
     if amount <= 0:
         raise ValueError("amount_usd must be positive.")
     desk = view(book, limits, weekend, as_of_utc)
     _, lender_power, weekend_power, _ = _price(book, limits, weekend, as_of_utc)
     debt = _d(book.debt_usd, "debt_usd")
+    cash = _d(book.cash_usd, "cash_usd")
     floor = _d(limits.min_health, "min_health")
     cap_left = Decimal(desk["spend"]["weekly_cap_left_usd"])
-    lender_ok = _health(lender_power, debt + amount) >= floor
-    base = {"amount_usd": _usd(amount), "lender_would_allow": lender_ok,
+    borrow = max(Decimal(0), amount - cash)
+    lender_ok = _health(lender_power, debt + borrow) >= floor
+    base = {"amount_usd": _usd(amount), "from_cash_usd": _usd(amount - borrow),
+            "borrow_usd": _usd(borrow), "lender_would_allow": lender_ok,
             "health_now": desk["health"], "as_of_utc": as_of_utc}
     if amount > cap_left:
         return {**base, "action": "REFUSE",
                 "reason": f"Over the weekly spend cap. {_usd(cap_left)} USDC left this week."}
-    if _health(weekend_power, debt + amount) >= floor:
+    if _health(weekend_power, debt + borrow) >= floor:
         return {**base, "action": "ALLOW", "reason": "Weekend health stays above the floor.",
-                "health_after": _hf(_health(weekend_power, debt + amount))}
-    repay = (debt + amount - weekend_power / floor).quantize(CENT, rounding=ROUND_UP)
-    cash = _d(book.cash_usd, "cash_usd")
-    if repay <= cash:
-        return {**base, "action": "REPAY_FIRST", "repay_usd": _usd(repay),
-                "reason": "The frozen lending price allows this spend. The weekend price "
-                          "does not. Repay from cash first, then spend.",
-                "health_after": _hf(_health(weekend_power, debt - repay + amount))}
-    return {**base, "action": "REFUSE",
-            "reason": f"Needs a {_usd(repay)} USDC repayment and the agent holds {_usd(cash)}."}
+                "health_after": _hf(_health(weekend_power, debt + borrow))}
+    safe_borrow = max(Decimal(0), weekend_power / floor - debt).quantize(CENT, rounding=ROUND_DOWN)
+    safe_total = min(cash + safe_borrow, cap_left)
+    if safe_total <= 0:
+        return {**base, "action": "REFUSE", "reason": "No safe amount left this weekend."}
+    reason = ("Friday's lending price allows this spend. The weekend price does not. "
+              if lender_ok else "Both prices put this spend under the floor. ")
+    return {**base, "action": "CUT", "allowed_usd": _usd(safe_total),
+            "reason": reason + f"Spend at most {_usd(safe_total)} USDC now.",
+            "health_after": _hf(_health(weekend_power, debt + safe_total - cash))}
 
 
 def after_reopen(book, limits, weekend, amount_usd):
-    """Lender health once the Aave feed reopened, with and without the desk's repayment."""
+    """Lender health once the Aave feed reopened: the full spend versus the desk's answer."""
     cf = _d(limits.collateral_factor, "collateral_factor")
     reopen = {}
     with OBSERVATIONS.open(newline="", encoding="utf-8") as source:
@@ -181,18 +185,21 @@ def after_reopen(book, limits, weekend, amount_usd):
                 reopen[row["symbol"]] = (Decimal(row["reopen_usd"]), int(row["reopen_updated_at_unix"]))
     power = sum(reopen[s][0] * _d(u, "units") for s, u in book.positions) * cf
     debt = _d(book.debt_usd, "debt_usd")
-    amount = _d(amount_usd, "amount_usd")
-    last_reopen = max(reopen[s][1] for s, _ in book.positions)
-    as_of = "2026-11-09T00:05:00Z"
-    decision = check_spend(book, limits, weekend, as_of, amount_usd)
-    repay = Decimal(decision.get("repay_usd", "0"))
-    without_hf = _health(power, debt + amount)
-    with_hf = _health(power, debt + amount - repay)
+    cash = _d(book.cash_usd, "cash_usd")
+    decision = check_spend(book, limits, weekend, "2026-11-09T00:05:00Z", amount_usd)
+    spent = _d(decision.get("allowed_usd", decision["amount_usd"]), "allowed")
+    if decision["action"] == "REFUSE":
+        spent = Decimal(0)
+    full_debt = debt + max(Decimal(0), _d(amount_usd, "amount_usd") - cash)
+    desk_debt = debt + max(Decimal(0), spent - cash)
+    without_hf, with_hf = _health(power, full_debt), _health(power, desk_debt)
+    floor = _d(limits.min_health, "min_health")
     return {
-        "reopen_at_unix": last_reopen,
-        "without_desk": {"debt_usd": _usd(debt + amount), "health": _hf(without_hf)},
-        "with_desk": {"debt_usd": _usd(debt + amount - repay), "health": _hf(with_hf),
-                      "repaid_usd": _usd(repay)},
+        "reopen_at_unix": max(reopen[s][1] for s, _ in book.positions),
+        "requested_usd": _usd(_d(amount_usd, "amount_usd")),
+        "without_desk": {"debt_usd": _usd(full_debt), "health": _hf(without_hf)},
+        "with_desk": {"debt_usd": _usd(desk_debt), "health": _hf(with_hf), "spent_usd": _usd(spent)},
         "floor": limits.min_health,
-        "floor_breached_without_desk": without_hf < _d(limits.min_health, "min_health"),
+        "floor_breached_without_desk": without_hf < floor,
+        "floor_breached_with_desk": with_hf < floor,
     }

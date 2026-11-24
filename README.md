@@ -1,6 +1,6 @@
 # Stock Desk for agents
 
-An agent that keeps its savings in tokenized stocks on Base, and borrows USDC against them to pay for its work, asks the desk before every spend. The desk shows positions, exposure per stock and health in two views: the frozen lending price the lender uses over the weekend, and the closed Base pool price minus the forecast error band. It then allows the spend, asks for a repayment first, or refuses. It never buys or sells stock.
+An agent that keeps its savings in tokenized stocks on Base, and borrows USDC against them to pay for its work, asks the desk before every spend. The desk shows positions, exposure per stock and health in two views: the frozen lending price the lender uses over the weekend, and the closed Base pool price minus the forecast error band. A spend uses cash first and borrows the rest. The desk allows it, cuts it to the safe amount, or refuses it. It never buys or sells stock.
 
 ## Try the desk
 
@@ -9,7 +9,7 @@ python3 -B proof/run_desk.py                 # print the desk receipt for the sa
 python3 -B proof/run_desk.py --serve 8851    # GET /desk and /desk/spend?usd=25 on loopback
 ```
 
-On the saved weekend the lender view shows health 1.413 and the weekend view 1.358 against an owner floor of 1.30. A 25 USDC spend passes on Friday's price and needs an 8.69 USDC repayment first on the weekend price. When the feed reopened the floor held either way, so that repayment was caution, not a rescue. The book is a demo book, not a real wallet, and the prices are historical replays. The [desk receipt](demo/desk.json) is the captured run and [desk.py](proof/collateral_card/desk.py) is the code. Tests: `cd tests && python3 -B -m unittest test_desk`.
+On the saved weekend the lender view shows health 1.413 and the weekend view 1.358 against an owner floor of 1.30. The agent holds 10 USDC cash. A 40 USDC spend passes on Friday's price and is cut to 26.31 USDC on the weekend price. When the feed reopened, the full spend would have left health at 1.287, under the floor, and the cut amount left it at 1.334. Liquidation starts at 1.0, so neither path was liquidated. The book is a demo book, not a real wallet, and the prices are historical replays. The [desk receipt](demo/desk.json) is the captured run and [desk.py](proof/collateral_card/desk.py) is the code. Tests: `cd tests && python3 -B -m unittest test_desk`.
 
 The loan rule underneath is Collateral Card, described below.
 

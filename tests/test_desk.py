@@ -31,8 +31,8 @@ class DeskViewTest(TestCase):
 
     def test_safe_spend_uses_the_weekend_price(self):
         desk = view(DEMO_BOOK, DEMO_LIMITS, WEEKEND, AS_OF)
-        self.assertEqual(desk["spend"]["safe_now_usd"], "16.31")
-        self.assertEqual(desk["spend"]["lender_would_allow_usd"], "31.46")
+        self.assertEqual(desk["spend"]["safe_now_usd"], "26.31")
+        self.assertEqual(desk["spend"]["lender_would_allow_usd"], "41.46")
 
 
 class SpendCheckTest(TestCase):
@@ -40,16 +40,19 @@ class SpendCheckTest(TestCase):
         d = check_spend(DEMO_BOOK, DEMO_LIMITS, WEEKEND, AS_OF, "5.00")
         self.assertEqual(d["action"], "ALLOW")
 
-    def test_spend_the_frozen_price_allows_is_held_until_repay(self):
-        d = check_spend(DEMO_BOOK, DEMO_LIMITS, WEEKEND, AS_OF, "25.00")
-        self.assertEqual(d["action"], "REPAY_FIRST")
-        self.assertEqual(d["repay_usd"], "8.69")
+    def test_spend_the_frozen_price_allows_is_cut_to_the_safe_amount(self):
+        d = check_spend(DEMO_BOOK, DEMO_LIMITS, WEEKEND, AS_OF, "40.00")
+        self.assertEqual(d["action"], "CUT")
+        self.assertEqual(d["from_cash_usd"], "10.00")
+        self.assertEqual(d["borrow_usd"], "30.00")
+        self.assertEqual(d["allowed_usd"], "26.31")
         self.assertTrue(d["lender_would_allow"])
 
-    def test_spend_without_cash_to_repay_is_refused(self):
-        poor = Book(positions=DEMO_BOOK.positions, debt_usd=DEMO_BOOK.debt_usd, cash_usd="2.00",
-                    spent_this_week_usd="0")
-        d = check_spend(poor, DEMO_LIMITS, WEEKEND, AS_OF, "25.00")
+    def test_book_under_the_floor_with_no_cash_is_refused(self):
+        low = Book(positions=DEMO_BOOK.positions, debt_usd="380.00", cash_usd="0",
+                   spent_this_week_usd="0")
+        self.assertIn("min_health", [b["limit"] for b in view(low, DEMO_LIMITS, WEEKEND, AS_OF)["breaches"]])
+        d = check_spend(low, DEMO_LIMITS, WEEKEND, AS_OF, "5.00")
         self.assertEqual(d["action"], "REFUSE")
 
     def test_weekly_cap_refuses_before_health(self):
@@ -69,9 +72,10 @@ class SpendCheckTest(TestCase):
 
 class ReopenTest(TestCase):
     def test_reopen_outcome_is_reported_as_measured(self):
-        # The real reopen fell less than the weekend pool price. Both paths stay above the
-        # floor; the desk path keeps more margin. The test pins the measured numbers.
-        r = after_reopen(DEMO_BOOK, DEMO_LIMITS, WEEKEND, "25.00")
-        self.assertEqual(r["without_desk"]["health"], "1.303")
+        # Recorded reopen prices. The full 40 USDC spend ends under the owner's 1.30 floor;
+        # the desk's cut amount stays above it. Neither path reaches liquidation (1.0).
+        r = after_reopen(DEMO_BOOK, DEMO_LIMITS, WEEKEND, "40.00")
+        self.assertEqual(r["without_desk"]["health"], "1.287")
         self.assertEqual(r["with_desk"]["health"], "1.334")
-        self.assertFalse(r["floor_breached_without_desk"])
+        self.assertTrue(r["floor_breached_without_desk"])
+        self.assertFalse(r["floor_breached_with_desk"])

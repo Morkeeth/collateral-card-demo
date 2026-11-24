@@ -43,7 +43,7 @@
       }
     ],
     "debt_usd": "360.00",
-    "cash_usd": "40.00",
+    "cash_usd": "10.00",
     "health": {
       "lender_view": "1.413",
       "weekend_view": "1.358",
@@ -64,8 +64,8 @@
       }
     ],
     "spend": {
-      "safe_now_usd": "16.31",
-      "lender_would_allow_usd": "31.46",
+      "safe_now_usd": "26.31",
+      "lender_would_allow_usd": "41.46",
       "weekly_cap_left_usd": "50.00"
     },
     "limits": {
@@ -79,6 +79,8 @@
   "checks": [
     {
       "amount_usd": "5.00",
+      "from_cash_usd": "5.00",
+      "borrow_usd": "0.00",
       "lender_would_allow": true,
       "health_now": {
         "lender_view": "1.413",
@@ -88,10 +90,12 @@
       "as_of_utc": "2026-11-09T00:05:00Z",
       "action": "ALLOW",
       "reason": "Weekend health stays above the floor.",
-      "health_after": "1.340"
+      "health_after": "1.358"
     },
     {
-      "amount_usd": "25.00",
+      "amount_usd": "40.00",
+      "from_cash_usd": "10.00",
+      "borrow_usd": "30.00",
       "lender_would_allow": true,
       "health_now": {
         "lender_view": "1.413",
@@ -99,13 +103,15 @@
         "floor": "1.30"
       },
       "as_of_utc": "2026-11-09T00:05:00Z",
-      "action": "REPAY_FIRST",
-      "repay_usd": "8.69",
-      "reason": "The frozen lending price allows this spend. The weekend price does not. Repay from cash first, then spend.",
+      "action": "CUT",
+      "allowed_usd": "26.31",
+      "reason": "Friday's lending price allows this spend. The weekend price does not. Spend at most 26.31 USDC now.",
       "health_after": "1.300"
     },
     {
       "amount_usd": "60.00",
+      "from_cash_usd": "10.00",
+      "borrow_usd": "50.00",
       "lender_would_allow": false,
       "health_now": {
         "lender_view": "1.413",
@@ -119,17 +125,19 @@
   ],
   "after_reopen": {
     "reopen_at_unix": 1794186046,
+    "requested_usd": "40.00",
     "without_desk": {
-      "debt_usd": "385.00",
-      "health": "1.303"
+      "debt_usd": "390.00",
+      "health": "1.287"
     },
     "with_desk": {
       "debt_usd": "376.31",
       "health": "1.334",
-      "repaid_usd": "8.69"
+      "spent_usd": "26.31"
     },
     "floor": "1.30",
-    "floor_breached_without_desk": false
+    "floor_breached_without_desk": true,
+    "floor_breached_with_desk": false
   },
   "labels": [
     "historical replay",

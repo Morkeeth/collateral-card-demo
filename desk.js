@@ -5,7 +5,7 @@
   const day = new Intl.DateTimeFormat("en-GB", {
     dateStyle: "medium", timeStyle: "short", hourCycle: "h23", timeZone: "UTC",
   });
-  const words = { ALLOW: "Allowed", REPAY_FIRST: "Repay first", REFUSE: "Refused" };
+  const words = { ALLOW: "Allowed", CUT: "Cut", REFUSE: "Refused" };
 
   function cell(row, text, cls) {
     const td = document.createElement("td");
@@ -50,14 +50,15 @@
       const verdict = document.createElement("b");
       verdict.textContent = words[c.action] || c.action;
       if (c.action === "REFUSE") verdict.className = "refuse";
-      const repay = c.repay_usd ? ` Repay ${money.format(c.repay_usd)}.` : "";
-      li.append(`Spend ${money.format(c.amount_usd)}: `, verdict, `. ${c.reason}${repay}`);
+      const split = Number(c.borrow_usd) > 0 ? ` (${c.from_cash_usd} cash, ${c.borrow_usd} borrowed)` : " (cash)";
+      li.append(`Spend ${money.format(c.amount_usd)}${split}: `, verdict, `. ${c.reason}`);
       checks.append(li);
     }
     const a = r.after_reopen;
     document.getElementById("desk-reopen").textContent =
-      `When the lending price reopened, health was ${a.without_desk.health} without the repayment and ${a.with_desk.health} with it. ` +
-      (a.floor_breached_without_desk ? "Without the desk the floor was broken." : "The floor held either way this weekend, so the repayment was caution, not a rescue.");
+      `When the lending price reopened, the full ${a.requested_usd} USDC spend left health at ${a.without_desk.health}` +
+      (a.floor_breached_without_desk ? `, under the owner's ${a.floor} floor. ` : `, above the owner's ${a.floor} floor. `) +
+      `The desk's ${a.with_desk.spent_usd} USDC left it at ${a.with_desk.health}. Liquidation starts at 1.0, so neither path was liquidated.`;
     result.hidden = false;
     status.hidden = true;
   }

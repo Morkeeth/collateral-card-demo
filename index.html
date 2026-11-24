@@ -12,7 +12,7 @@
     <header class="intro">
       <h1>Stock Desk for agents</h1>
       <p class="lede">
-        An agent that keeps its savings in tokenized stocks on Base asks the desk before every spend. The desk shows its positions, its exposure and its real weekend health, then allows the spend, asks for a repayment first, or refuses.
+        An agent that keeps its savings in tokenized stocks on Base asks the desk before every spend. The desk shows its positions, its exposure and its real weekend health, then allows the spend, cuts it to the safe amount, or refuses.
       </p>
       <section aria-labelledby="offline-heading">
         <h2 id="offline-heading">Verify offline</h2>
@@ -45,7 +45,7 @@
         <dl class="quote-prices desk-health">
           <div><dt>Health the lender sees</dt><dd id="desk-hf-lender"></dd></div>
           <div><dt>Health this weekend</dt><dd id="desk-hf-weekend"></dd><small id="desk-floor"></small></div>
-          <div><dt>Safe to spend now</dt><dd id="desk-safe"></dd><small id="desk-lender-safe"></small></div>
+          <div><dt>Safe to spend now, cash plus borrowing</dt><dd id="desk-safe"></dd><small id="desk-lender-safe"></small></div>
         </dl>
         <ul id="desk-breaches" class="desk-breaches"></ul>
         <h3>Three spend requests</h3>
