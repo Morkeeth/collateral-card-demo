@@ -1,0 +1,139 @@
+{
+  "desk": {
+    "mode": "historical replay",
+    "network": "Base",
+    "weekend_friday": "2026-11-06",
+    "as_of_utc": "2026-11-09T00:05:00Z",
+    "positions": [
+      {
+        "stock": "NVDAc",
+        "units": "2",
+        "lending_price_usd": "187.96606001",
+        "lending_price_at_utc": "2026-11-06T21:39:16Z",
+        "pool_close_usd": "178.46556282635999",
+        "pool_close_at_utc": "2026-11-09T00:00:00Z",
+        "gap_percent": "-5.05",
+        "lending_value_usd": "375.93",
+        "market_value_usd": "356.93",
+        "share_percent": "50.7"
+      },
+      {
+        "stock": "TSLAc",
+        "units": "0.5",
+        "lending_price_usd": "359.09",
+        "lending_price_at_utc": "2026-11-06T21:42:54Z",
+        "pool_close_usd": "353.84682184380597",
+        "pool_close_at_utc": "2026-11-09T00:00:00Z",
+        "gap_percent": "-1.46",
+        "lending_value_usd": "179.54",
+        "market_value_usd": "176.92",
+        "share_percent": "25.1"
+      },
+      {
+        "stock": "AAPLc",
+        "units": "0.5",
+        "lending_price_usd": "343.05875",
+        "lending_price_at_utc": "2026-11-06T19:58:39Z",
+        "pool_close_usd": "340.319001803549",
+        "pool_close_at_utc": "2026-11-09T00:00:00Z",
+        "gap_percent": "-0.80",
+        "lending_value_usd": "171.53",
+        "market_value_usd": "170.16",
+        "share_percent": "24.2"
+      }
+    ],
+    "debt_usd": "360.00",
+    "cash_usd": "40.00",
+    "health": {
+      "lender_view": "1.413",
+      "weekend_view": "1.358",
+      "floor": "1.30"
+    },
+    "exposure": {
+      "largest_stock": "NVDAc",
+      "largest_share_percent": "50.7",
+      "market_value_usd": "704.01"
+    },
+    "breaches": [
+      {
+        "stock": "NVDAc",
+        "limit": "max_stock_share",
+        "share_percent": "50.7",
+        "limit_percent": "50.0",
+        "effect": "Add no more of this stock."
+      }
+    ],
+    "spend": {
+      "safe_now_usd": "16.31",
+      "lender_would_allow_usd": "31.46",
+      "weekly_cap_left_usd": "50.00"
+    },
+    "limits": {
+      "min_health": "1.30",
+      "max_stock_share": "0.50",
+      "weekly_spend_cap_usd": "50.00",
+      "collateral_factor": "0.70",
+      "error_band_points": "0.71"
+    }
+  },
+  "checks": [
+    {
+      "amount_usd": "5.00",
+      "lender_would_allow": true,
+      "health_now": {
+        "lender_view": "1.413",
+        "weekend_view": "1.358",
+        "floor": "1.30"
+      },
+      "as_of_utc": "2026-11-09T00:05:00Z",
+      "action": "ALLOW",
+      "reason": "Weekend health stays above the floor.",
+      "health_after": "1.340"
+    },
+    {
+      "amount_usd": "25.00",
+      "lender_would_allow": true,
+      "health_now": {
+        "lender_view": "1.413",
+        "weekend_view": "1.358",
+        "floor": "1.30"
+      },
+      "as_of_utc": "2026-11-09T00:05:00Z",
+      "action": "REPAY_FIRST",
+      "repay_usd": "8.69",
+      "reason": "The frozen lending price allows this spend. The weekend price does not. Repay from cash first, then spend.",
+      "health_after": "1.300"
+    },
+    {
+      "amount_usd": "60.00",
+      "lender_would_allow": false,
+      "health_now": {
+        "lender_view": "1.413",
+        "weekend_view": "1.358",
+        "floor": "1.30"
+      },
+      "as_of_utc": "2026-11-09T00:05:00Z",
+      "action": "REFUSE",
+      "reason": "Over the weekly spend cap. 50.00 USDC left this week."
+    }
+  ],
+  "after_reopen": {
+    "reopen_at_unix": 1794186046,
+    "without_desk": {
+      "debt_usd": "385.00",
+      "health": "1.303"
+    },
+    "with_desk": {
+      "debt_usd": "376.31",
+      "health": "1.334",
+      "repaid_usd": "8.69"
+    },
+    "floor": "1.30",
+    "floor_breached_without_desk": false
+  },
+  "labels": [
+    "historical replay",
+    "demo book, not a real wallet",
+    "no trades are placed"
+  ]
+}

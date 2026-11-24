@@ -5,6 +5,7 @@ read 21 Nov 2026.
 """
 import base64
 import json
+import re
 
 USDC = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
 NETWORK = "eip155:8453"
@@ -17,15 +18,18 @@ TOKEN_NAME = "USD Coin"
 TOKEN_VERSION = "2"
 
 
-def requirements(pay_to, amount_raw, max_timeout_seconds=60):
+def requirements(
+    pay_to, amount_raw, max_timeout_seconds=60, *,
+    network=NETWORK, asset=USDC, token_name=TOKEN_NAME,
+):
     return {
         "scheme": "exact",
-        "network": NETWORK,
+        "network": network,
         "amount": str(int(amount_raw)),
-        "asset": USDC,
+        "asset": asset,
         "payTo": pay_to,
         "maxTimeoutSeconds": int(max_timeout_seconds),
-        "extra": {"name": TOKEN_NAME, "version": TOKEN_VERSION},
+        "extra": {"name": token_name, "version": TOKEN_VERSION},
     }
 
 
@@ -33,7 +37,7 @@ def payment_required(terms, url):
     return {
         "x402Version": VERSION,
         "error": f"{HEADER_SIGNATURE} header is required",
-        "resource": {"url": url, "description": "Weekend reopen quote", "mimeType": "application/json"},
+        "resource": {"url": url, "description": "Recorded Base weekend price comparison", "mimeType": "application/json"},
         "accepts": [terms],
     }
 
@@ -57,11 +61,18 @@ def _same(a, b):
     return str(a or "").lower() == str(b or "").lower()
 
 
+def _hex_value(value, digits):
+    return isinstance(value, str) and re.fullmatch(r"0x[0-9a-fA-F]{%d}" % digits, value)
+
+
 def check_payment(payment, terms, now):
     """Check a PaymentPayload against our own terms. The token contract checks the signature at settlement."""
     if payment.get("x402Version") != VERSION:
         return False, "wrong version"
-    accepted = payment.get("accepted") or {}
+    accepted = payment.get("accepted")
+    payload = payment.get("payload")
+    if not isinstance(accepted, dict) or not isinstance(payload, dict):
+        return False, "invalid payload"
     if accepted.get("scheme") != terms["scheme"]:
         return False, "wrong scheme"
     if accepted.get("network") != terms["network"]:
@@ -72,10 +83,18 @@ def check_payment(payment, terms, now):
         return False, "wrong amount"
     if not _same(accepted.get("payTo"), terms["payTo"]):
         return False, "wrong payee"
-    extra = accepted.get("extra") or {}
+    extra = accepted.get("extra")
+    if not isinstance(extra, dict):
+        return False, "wrong token domain"
     if extra.get("name") != terms["extra"]["name"] or extra.get("version") != terms["extra"]["version"]:
         return False, "wrong token domain"
-    auth = (payment.get("payload") or {}).get("authorization") or {}
+    auth = payload.get("authorization")
+    if not isinstance(auth, dict):
+        return False, "invalid authorization"
+    if not _hex_value(auth.get("from"), 40) or not _hex_value(auth.get("nonce"), 64):
+        return False, "invalid authorization"
+    if not _hex_value(payload.get("signature"), 130):
+        return False, "invalid signature"
     if not _same(auth.get("to"), terms["payTo"]):
         return False, "wrong payee"
     if str(auth.get("value")) != terms["amount"]:

@@ -15,6 +15,7 @@ from pathlib import Path
 
 from collateral_card.guard import NotLocalRPC, require_local
 from collateral_card import rule, x402
+from collateral_card.paid_quote import DEMO_REQUEST, weekend_quote
 
 # ---- Proven addresses (manual spike) ------------------------------------------------------------
 SPOKE = "0x17905Db0e4A3514467539956c084180616AE7B8D"
@@ -275,7 +276,13 @@ def _split_sig(sig: str) -> tuple[int, str, str]:
     return v, r, s
 
 
-def _start_x402_server(rpc: str, payee: str, terms: dict, counter: _RemoteWriteCounter):
+def _start_x402_server(
+    rpc: str, payee: str, terms: dict, counter: _RemoteWriteCounter,
+    *, quote_request=DEMO_REQUEST,
+):
+    counter.check(rpc)
+    quote_body = json.dumps(weekend_quote(*quote_request)).encode()
+
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, fmt, *args):
             return
@@ -283,6 +290,7 @@ def _start_x402_server(rpc: str, payee: str, terms: dict, counter: _RemoteWriteC
         def _reply(self, status: int, headers: dict | None = None, body: bytes = b"{}"):
             self.send_response(status)
             self.send_header("Content-Type", "application/json")
+            self.send_header("Cache-Control", "no-store")
             self.send_header("Content-Length", str(len(body)))
             for k, v in (headers or {}).items():
                 self.send_header(k, v)
@@ -290,19 +298,19 @@ def _start_x402_server(rpc: str, payee: str, terms: dict, counter: _RemoteWriteC
             self.wfile.write(body)
 
         def _refuse(self, reason: str, payer: str = ""):
-            required = x402.payment_required(terms, f"http://{self.headers.get('Host')}/quote")
+            required = x402.payment_required(terms, f"http://127.0.0.1:{self.server.server_port}/quote")
             settled = {"success": False, "errorReason": reason, "transaction": "",
                        "network": terms["network"], "payer": payer}
             self._reply(402, {x402.HEADER_REQUIRED: x402.encode_header(required),
                               x402.HEADER_RESPONSE: x402.encode_header(settled)})
 
         def do_GET(self):
-            if self.path.split("?")[0] != "/quote":
+            if self.path != "/quote":
                 self._reply(404)
                 return
             header = self.headers.get(x402.HEADER_SIGNATURE)
             if not header:
-                required = x402.payment_required(terms, f"http://{self.headers.get('Host')}/quote")
+                required = x402.payment_required(terms, f"http://127.0.0.1:{self.server.server_port}/quote")
                 self._reply(402, {x402.HEADER_REQUIRED: x402.encode_header(required)})
                 return
             try:
@@ -311,13 +319,14 @@ def _start_x402_server(rpc: str, payee: str, terms: dict, counter: _RemoteWriteC
                 self._refuse("invalid_payload")
                 return
             ok, why = x402.check_payment(payment, terms, _block_timestamp(rpc))
-            auth = (payment.get("payload") or {}).get("authorization") or {}
             if not ok:
-                self._refuse(why, str(auth.get("from", "")))
+                self._refuse(why)
                 return
-            v, r, s = _split_sig(payment["payload"]["signature"])
+            payload = payment["payload"]
+            auth = payload["authorization"]
+            v, r, s = _split_sig(payload["signature"])
             receipt = _cast_send(
-                rpc, payee, USDC,
+                rpc, payee, terms["asset"],
                 "transferWithAuthorization(address,address,uint256,uint256,uint256,bytes32,uint8,bytes32,bytes32)",
                 auth["from"], auth["to"], str(auth["value"]), str(auth["validAfter"]),
                 str(auth["validBefore"]), auth["nonce"], str(v), r, s, counter=counter,
@@ -327,7 +336,7 @@ def _start_x402_server(rpc: str, payee: str, terms: dict, counter: _RemoteWriteC
                 return
             settled = {"success": True, "transaction": receipt.get("transactionHash", ""),
                        "network": terms["network"], "payer": auth["from"]}
-            self._reply(200, {x402.HEADER_RESPONSE: x402.encode_header(settled)}, b'{"ok":true}')
+            self._reply(200, {x402.HEADER_RESPONSE: x402.encode_header(settled)}, quote_body)
 
     port = _free_port()
     server = HTTPServer(("127.0.0.1", port), Handler)
@@ -379,11 +388,12 @@ def _x402_flow(rpc: str, server_base: str, payer: str, payee: str) -> dict:
     first_status, _, first_headers = _http_get(f"{server_base}/quote")
     required = x402.decode_header(_header(first_headers, x402.HEADER_REQUIRED))
     payment = _signed_payment(rpc, required, payer, payer)
-    before = _call_uint(rpc, USDC, "balanceOf(address)(uint256)", payee)
-    paid_status, _, paid_headers = _http_get(
+    asset = required["accepts"][0]["asset"]
+    before = _call_uint(rpc, asset, "balanceOf(address)(uint256)", payee)
+    paid_status, paid_body, paid_headers = _http_get(
         f"{server_base}/quote", headers={x402.HEADER_SIGNATURE: x402.encode_header(payment)},
     )
-    after = _call_uint(rpc, USDC, "balanceOf(address)(uint256)", payee)
+    after = _call_uint(rpc, asset, "balanceOf(address)(uint256)", payee)
     settled = _header(paid_headers, x402.HEADER_RESPONSE)
     return {
         "protocol": required["x402Version"],
@@ -391,6 +401,7 @@ def _x402_flow(rpc: str, server_base: str, payer: str, payee: str) -> dict:
         "paid_status": paid_status,
         "payee_delta_raw": after - before,
         "settlement": x402.decode_header(settled) if settled else None,
+        "quote": json.loads(paid_body) if paid_status == 200 else None,
     }
 
 

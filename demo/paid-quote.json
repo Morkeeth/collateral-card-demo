@@ -1,0 +1,33 @@
+{
+  "mode": "local Base Sepolia fork",
+  "network": "eip155:84532",
+  "fork_block": 62992943,
+  "fork_block_hash": "0xdc27af8b8caaaf3a45aed0a2fbcc66308783afffad353f22534d803d166acf1a",
+  "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+  "http": {
+    "challenge": 402,
+    "paid": 200,
+    "retry": 402
+  },
+  "buyer_delta_raw": -50000,
+  "seller_delta_raw": 50000,
+  "retry_delta_raw": 0,
+  "local_settlement_tx": "0x80392615b4832bc2061c3fdf388ec53bdb1264b4395ce4ea44b2c13a4eebf840",
+  "remote_writes": 0,
+  "quote": {
+    "mode": "historical replay",
+    "network": "Base",
+    "stock": "NVDAc",
+    "weekend_friday": "2026-11-06",
+    "as_of_utc": "2026-11-09T00:05:00Z",
+    "lending_price_usd": "187.96606001",
+    "lending_price_at_utc": "2026-11-06T21:39:16Z",
+    "pool_close_usd": "178.46556282635999",
+    "pool_close_at_utc": "2026-11-09T00:00:00Z",
+    "pool_minus_lending_percent": "-5.05",
+    "source": {
+      "lending_round": "36893488147419104163",
+      "pool_series": "main"
+    }
+  }
+}

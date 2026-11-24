@@ -3,15 +3,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Collateral Card</title>
+  <title>Stock Desk for agents</title>
+  <link rel="icon" href="data:," />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="page">
     <header class="intro">
-      <h1>Collateral Card</h1>
+      <h1>Stock Desk for agents</h1>
       <p class="lede">
-        A stock-backed loan can look healthy while its oracle price is frozen. As the stock token trades through the weekend, an agent can watch the gap and decide whether to cut debt before the oracle updates.
+        An agent that keeps its savings in tokenized stocks on Base asks the desk before every spend. The desk shows its positions, its exposure and its real weekend health, then allows the spend, asks for a repayment first, or refuses.
       </p>
       <section aria-labelledby="offline-heading">
         <h2 id="offline-heading">Verify offline</h2>
@@ -19,12 +20,79 @@
       </section>
       <nav class="judge-links" aria-label="Explore the demo">
         <a href="https://github.com/Morkeeth/collateral-card-demo#verify-offline">Offline check instructions</a>
+        <a href="#desk-heading">Open the desk</a>
+        <a href="#paid-quote-heading">Open the paid quote</a>
         <a href="#earned-heading">Compare the two loans</a>
         <a class="rule-link" href="#attack-heading">Test the rule</a>
         <a href="#limits-heading">Replay limits</a>
         <a data-testid="source-link" href="https://github.com/Morkeeth/collateral-card-demo/blob/main/README.md">Code and proof</a>
       </nav>
     </header>
+
+
+    <section class="desk" data-testid="desk" aria-labelledby="desk-heading">
+      <h2 id="desk-heading">The agent's desk on Sunday night</h2>
+      <p class="section-note">The lending market still uses Friday's price. The desk prices each position at the closed Base pool candle as well, minus the forecast error band, and checks the owner's limits there.</p>
+      <p id="desk-status" role="status">Loading desk receipt…</p>
+      <div id="desk-result" hidden>
+        <p id="desk-observation" class="desk-observation"></p>
+        <div class="desk-table-wrap">
+          <table class="desk-table">
+            <thead><tr><th scope="col">Stock</th><th scope="col">Units</th><th scope="col">Lender value</th><th scope="col">Base pool value</th><th scope="col">Gap</th><th scope="col">Share</th></tr></thead>
+            <tbody id="desk-rows"></tbody>
+          </table>
+        </div>
+        <dl class="quote-prices desk-health">
+          <div><dt>Health the lender sees</dt><dd id="desk-hf-lender"></dd></div>
+          <div><dt>Health this weekend</dt><dd id="desk-hf-weekend"></dd><small id="desk-floor"></small></div>
+          <div><dt>Safe to spend now</dt><dd id="desk-safe"></dd><small id="desk-lender-safe"></small></div>
+        </dl>
+        <ul id="desk-breaches" class="desk-breaches"></ul>
+        <h3>Three spend requests</h3>
+        <ol id="desk-checks" class="desk-checks"></ol>
+        <p id="desk-reopen" class="quote-provenance"></p>
+        <p class="quote-provenance">Historical replay of the 6 November weekend. Demo book, not a real wallet. The desk places no trades.</p>
+        <div class="judge-links">
+          <a href="demo/desk.json">Desk receipt</a>
+          <a href="https://github.com/Morkeeth/collateral-card-demo/blob/main/proof/collateral_card/desk.py">Desk code</a>
+          <a href="#paid-quote-heading">The price check it reads</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="paid-quote" aria-labelledby="paid-quote-heading">
+      <h2 id="paid-quote-heading">What the buyer gets</h2>
+      <p class="section-note">A dated comparison of the frozen Aave price and the last closed Base pool candle.</p>
+      <details id="quote-demo">
+        <summary>Open the recorded paid response <span>0.05 test USDC</span></summary>
+        <p id="quote-status" role="status">Loading checkout receipt…</p>
+        <div id="quote-result" hidden>
+          <p id="quote-observation"></p>
+          <dl class="quote-prices">
+            <div>
+              <dt>Frozen Aave price</dt>
+              <dd id="quote-lender"></dd>
+              <small id="quote-lender-time"></small>
+            </div>
+            <div>
+              <dt>Base pool close</dt>
+              <dd id="quote-market"></dd>
+              <small id="quote-market-time"></small>
+            </div>
+            <div>
+              <dt id="quote-gap-label">Gap from lending price</dt>
+              <dd id="quote-gap"></dd>
+            </div>
+          </dl>
+          <p class="quote-provenance">Historical prices. Payment verified on a local Base Sepolia fork. Reusing the same authorization caused no second debit.</p>
+          <div class="judge-links">
+            <a href="demo/paid-quote.json">Payment receipt</a>
+            <a href="proof/backtest-observations.csv">Price observations</a>
+            <a href="#earned-heading">See how income affected the loan</a>
+          </div>
+        </div>
+      </details>
+    </section>
 
     <section class="stage" aria-label="Chart and attack controls">
       <div class="chart-panel" id="chart-panel">
@@ -159,7 +227,7 @@
     <section class="recorded" data-testid="earned" aria-labelledby="earned-heading">
       <h2 id="earned-heading">Simulated payment replay</h2>
       <p class="section-note">
-        Saved results from a local Base mainnet fork of the 6 November NVDAc weekend, using stand-in collateral. The agent moves its borrowed USDC out, then repays with proceeds from simulated x402 payments. One simulated buyer pays 0.05 USDC per request and the demo endpoint returns an acknowledgment.
+        Saved results from a local Base mainnet fork of the 6 November NVDAc weekend, using stand-in collateral. The agent moves its borrowed USDC out, then repays with proceeds from simulated x402 payments. The original saved trial used one simulated buyer and an acknowledgment endpoint. The paid price check above comes from the updated endpoint.
       </p>
       <div class="run-grid">
         <div class="run-col">
@@ -238,7 +306,7 @@
       <p>The saved loan results came from a local Base mainnet fork with a replayed reopen. The page independently calculates rule outcomes from recorded prices.</p>
       <p>The collateral token and price feed are stand-ins.</p>
       <p>Whether an agent wallet can hold real NVDAc is unverified.</p>
-      <p>The x402 server and facilitator are local.</p>
+      <p>The checkout ran on a local Base Sepolia fork. The saved loan trials ran on a separate local Base mainnet fork.</p>
       <p>The 6 Nov guarded and control run repays from borrowed USDC.</p>
       <p>All 518 payments came from one stand-in buyer. The endpoint returned an acknowledgment and delivered no forecast. Customer demand and repayment economics remain untested. The fork supplied the gas.</p>
       <p>The fork receipt has no repay time. The chart draws the repay when the forecast reads its last Sunday price.</p>
@@ -253,5 +321,7 @@
   <script src="data.js"></script>
   <script src="engine.js"></script>
   <script src="app.js"></script>
+  <script src="quote.js"></script>
+  <script src="desk.js"></script>
 </body>
 </html>

@@ -16,7 +16,7 @@ The [weekend backtest source manifest](SOURCE-MANIFEST.md) lists the saved obser
 
 The judge page displays saved results from a local Base mainnet fork. The interactive rule and chart use recorded prices in the browser. [recorded-comparison.json](recorded-comparison.json) contains the same outcome fields as the page bundle, with local RPC addresses omitted.
 
-The experiment replays the NVDAc weekend starting 6 November 2026. The oracle stand-in moves from $187.9661 to $183.0326. The agent supplies 2 stand-in NVDAc with target starting health 1.0042. Both trials move the borrowed USDC out of the agent's balance before any sales. One simulated buyer makes 518 x402 payments of 0.05 USDC to a demo endpoint in the paid trial. The endpoint returns the acknowledgment `{"ok":true}` and delivers no forecast. The control makes zero sales. [inputs.json](inputs.json) fixes these inputs and records the forecast estimate, forecast band, and collateral factor.
+The experiment replays the NVDAc weekend starting 6 November 2026. The oracle stand-in moves from $187.9661 to $183.0326. The agent supplies 2 stand-in NVDAc with target starting health 1.0042. Both trials move the borrowed USDC out of the agent's balance before any sales. One simulated buyer makes 518 x402 payments of 0.05 USDC to a demo endpoint in the paid trial. The endpoint in the original saved run returned the acknowledgment `{"ok":true}` and delivers no forecast. The control makes zero sales. [inputs.json](inputs.json) fixes these inputs and records the forecast estimate, forecast band, and collateral factor.
 
 | Recorded outcome | Simulated payment income | Income removed |
 | --- | ---: | ---: |
@@ -40,3 +40,5 @@ python3 proof/verify.py --fork-results \
 The runner uses public Base RPC for historical reads at block 60423882. It checks the block hash and starts a disposable loopback Anvil instance for each trial. The original receipt did not record its fork block. This rerun pins a known block and compares the outcomes at the page's display precision. The [paired pinned receipts](pinned-comparison.json) reproduce both outcomes in the table. Accrued interest can change the last digits of raw balances.
 
 The fork provides test accounts and gas. The collateral token, oracle, buyer and loan spend are stand-ins. The x402 server and settlement run on loopback. The test makes no mainnet transactions and requires no wallet or API key. It tests the repayment logic for this sample. The judge page also shows a separate borrowed-USDC comparison outside this runner.
+
+The current runner returns the recorded Aave and DEX prices at the recorded quote time. The public testnet can be used as the read-only source for a local fork: `python3 -B proof/run_sepolia.py --out /tmp/collateral-paid-quote.json`. This checks one separate Circle test USDC checkout and leaves the original loan proof input files intact.

@@ -95,7 +95,7 @@ def verify_replay(judge, inputs):
                       f"{scenario} remaining collateral")
         print(f"      {title}: {receipt['repaid_raw'] / 1e6:.2f} USDC repaid, "
               f"health {receipt['hf_after_reopen']:.4f}, {receipt['liquidation_attempt']}.")
-    print("      Receipt verification only. The demo endpoint returned an acknowledgment.")
+    print("      Saved receipt verification. The original demo endpoint returned an acknowledgment.")
 
 
 def verify_pins():

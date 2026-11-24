@@ -46,6 +46,7 @@ from collateral_card.demo import (
     _x402_flow,
 )
 from collateral_card import x402 as x402_mod
+from collateral_card.paid_quote import DEMO_REQUEST, weekend_quote
 
 
 def _total_debt(rpc: str, user: str) -> int:
@@ -166,10 +167,18 @@ def run(
         agent_before_sales = _call_uint(rpc, USDC, "balanceOf(address)(uint256)", agent)
         buyer_before = _call_uint(rpc, USDC, "balanceOf(address)(uint256)", buyer)
 
+        expected_quote = weekend_quote(*DEMO_REQUEST)
+        paid_quote = None
         for _ in range(sales):
             flow = _x402_flow(rpc, server_base, buyer, agent)
-            if flow["paid_status"] != 200 or not (flow.get("settlement") or {}).get("success"):
+            if (
+                flow["first_status"] != 402 or flow["paid_status"] != 200
+                or not (flow["settlement"] or {}).get("success")
+                or flow["payee_delta_raw"] != price_raw
+                or flow["quote"] != expected_quote
+            ):
                 raise RuntimeError(f"x402 sale failed: {flow}")
+            paid_quote = flow["quote"]
 
         agent_usdc_after_sales_raw = _call_uint(rpc, USDC, "balanceOf(address)(uint256)", agent)
         buyer_after = _call_uint(rpc, USDC, "balanceOf(address)(uint256)", buyer)
@@ -230,6 +239,7 @@ def run(
             "frozen_price": frozen,
             "reopen_price": reopen,
             "sales": sales,
+            "paid_quote": paid_quote,
             "price_raw": price_raw,
             "remote_writes": counter.count,
             "agent_usdc_after_ringfence_raw": agent_usdc_after_ringfence_raw,
@@ -256,6 +266,7 @@ def run(
     finally:
         if server is not None:
             server.shutdown()
+            server.server_close()
         if anvil_proc is not None:
             anvil_proc.terminate()
             try:
