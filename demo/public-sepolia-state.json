@@ -1,0 +1,24 @@
+{
+  "StockDeskLog": "0x123c296e78942074bb78fa3fcd50244a46a92128",
+  "deploy_tx": "0x432a35d82a008b510d21a2586bca0faa1cfc0574c11ab7f2b746c3ee898ab385",
+  "payment": {
+    "tx": "0x17e720bc2436cde2f4162902da4382e97202644ff009b1686b3817dc3bcea7bf",
+    "quote": {
+      "mode": "historical replay",
+      "network": "Base",
+      "stock": "NVDAc",
+      "weekend_friday": "2026-11-06",
+      "as_of_utc": "2026-11-09T00:05:00Z",
+      "lending_price_usd": "187.96606001",
+      "lending_price_at_utc": "2026-11-06T21:39:16Z",
+      "pool_close_usd": "178.46556282635999",
+      "pool_close_at_utc": "2026-11-09T00:00:00Z",
+      "pool_minus_lending_percent": "-5.05",
+      "source": {
+        "lending_round": "36893488147419104163",
+        "pool_series": "main"
+      }
+    }
+  },
+  "record_tx": "0xccbaea0f7e4c435a83d0ef4afadf6f6023c8c9b233f0dc686dbebf4418766f49"
+}

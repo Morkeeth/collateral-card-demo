@@ -1,0 +1,55 @@
+{
+  "mode": "public Base Sepolia",
+  "chain_id": 84532,
+  "desk_wallet": "0xFFF475A9cC3c552483612D2699DE26114F8DD7BC",
+  "seller": "0xCed779ef8CbbDF17b990974b0cbc27D64e38c67B",
+  "test_usdc": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+  "spend_record_contract": "0x123c296e78942074bb78fa3fcd50244a46a92128",
+  "transactions": {
+    "deploy": "0x432a35d82a008b510d21a2586bca0faa1cfc0574c11ab7f2b746c3ee898ab385",
+    "payment": "0x17e720bc2436cde2f4162902da4382e97202644ff009b1686b3817dc3bcea7bf",
+    "record": "0xccbaea0f7e4c435a83d0ef4afadf6f6023c8c9b233f0dc686dbebf4418766f49"
+  },
+  "paid_check": {
+    "http": [
+      402,
+      200,
+      402
+    ],
+    "repeat_reason": "authorization already used",
+    "price_raw": 50000,
+    "gap_percent": "-5.05"
+  },
+  "decision": {
+    "action": "CUT",
+    "amount_usd": "40.00",
+    "allowed_usd": "26.31",
+    "reason": "Friday's lending price allows this spend. The weekend price does not. Spend at most 26.31 USDC now."
+  },
+  "record_digest_sha3_256": "0x98706715ac9fb2111f787779b1cd4b96ff8e3667c4e24f97d59a0b6ab3b0652f",
+  "record_preimage": "{\"decision\": {\"action\": \"CUT\", \"allowed_usd\": \"26.31\", \"amount_usd\": \"40.00\", \"as_of_utc\": \"2026-11-09T00:05:00Z\", \"borrow_usd\": \"30.00\", \"from_cash_usd\": \"10.00\", \"health_after\": \"1.300\", \"health_now\": {\"floor\": \"1.30\", \"lender_view\": \"1.413\", \"weekend_view\": \"1.358\"}, \"lender_would_allow\": true, \"reason\": \"Friday's lending price allows this spend. The weekend price does not. Spend at most 26.31 USDC now.\"}, \"payment_tx\": \"0x17e720bc2436cde2f4162902da4382e97202644ff009b1686b3817dc3bcea7bf\", \"quote\": {\"as_of_utc\": \"2026-11-09T00:05:00Z\", \"lending_price_at_utc\": \"2026-11-06T21:39:16Z\", \"lending_price_usd\": \"187.96606001\", \"mode\": \"historical replay\", \"network\": \"Base\", \"pool_close_at_utc\": \"2026-11-09T00:00:00Z\", \"pool_close_usd\": \"178.46556282635999\", \"pool_minus_lending_percent\": \"-5.05\", \"source\": {\"lending_round\": \"36893488147419104163\", \"pool_series\": \"main\"}, \"stock\": \"NVDAc\", \"weekend_friday\": \"2026-11-06\"}}",
+  "gas_spent_wei": 2635570621363,
+  "checks": {
+    "challenge_is_402": true,
+    "paid_is_200": true,
+    "buyer_paid_exact": true,
+    "seller_got_exact": true,
+    "repeat_refused": true,
+    "record_added_one": true,
+    "record_event_matches": true
+  },
+  "labels": [
+    "testnet only",
+    "historical replay prices",
+    "demo book",
+    "the loan is simulated",
+    "no trades are placed"
+  ],
+  "explorer": {
+    "desk_wallet": "https://sepolia.basescan.org/address/0xFFF475A9cC3c552483612D2699DE26114F8DD7BC",
+    "spend_record_contract": "https://sepolia.basescan.org/address/0x123c296e78942074bb78fa3fcd50244a46a92128",
+    "deploy": "https://sepolia.basescan.org/tx/0x432a35d82a008b510d21a2586bca0faa1cfc0574c11ab7f2b746c3ee898ab385",
+    "payment": "https://sepolia.basescan.org/tx/0x17e720bc2436cde2f4162902da4382e97202644ff009b1686b3817dc3bcea7bf",
+    "record": "https://sepolia.basescan.org/tx/0xccbaea0f7e4c435a83d0ef4afadf6f6023c8c9b233f0dc686dbebf4418766f49"
+  }
+}
