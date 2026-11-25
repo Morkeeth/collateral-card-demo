@@ -13,7 +13,7 @@ On the saved weekend the lender view shows health 1.413 and the weekend view 1.3
 
 ## Judge walkthrough: from the agent's request to the explorer
 
-Five steps, about five minutes. Steps 1 and 2 run on your machine. Steps 3 to 5 are on public Base Sepolia (chain id 84532) and need only a browser. Every command below was run on 25 November 2026 and the output shown is the real output.
+Five steps, about five minutes. Steps 1 and 2 run on your machine. Steps 3 to 5 are on public Base Sepolia (chain id 84532) and need only a browser. Every command in this section was run on 25 November 2026. The outputs shown are real; the JSON in step 1 is reflowed onto fewer lines.
 
 **1. The agent asks before it spends.** It is Sunday 9 November 2026, 00:05 UTC. The agent wants to spend 40 USDC on a report.
 
@@ -26,6 +26,7 @@ curl -s "http://127.0.0.1:8851/desk/spend?usd=40"
 {"amount_usd": "40.00", "from_cash_usd": "10.00", "borrow_usd": "30.00",
  "lender_would_allow": true,
  "health_now": {"lender_view": "1.413", "weekend_view": "1.358", "floor": "1.30"},
+ "as_of_utc": "2026-11-09T00:05:00Z",
  "action": "CUT", "allowed_usd": "26.31",
  "reason": "Friday's lending price allows this spend. The weekend price does not. Spend at most 26.31 USDC now.",
  "health_after": "1.300"}
@@ -39,7 +40,7 @@ The lender would say yes. The desk says spend at most 26.31.
 
 **3. The spend record exists on Base Sepolia.** The desk wallet deployed `StockDeskLog`, a contract that only the desk wallet can write to. It records decisions and never trades.
 
-- Desk wallet: [0xFFF4...D7BC](https://base-sepolia.blockscout.com/address/0xFFF475A9cC3c552483612D2699DE26114F8DD7BC). This is a fresh testnet-only key with three transactions, the three below.
+- Desk wallet: [0xFFF4...D7BC](https://base-sepolia.blockscout.com/address/0xFFF475A9cC3c552483612D2699DE26114F8DD7BC). This is a fresh testnet-only key. It has sent three transactions, the three below. Its page also lists the incoming faucet transfers.
 - [Contract deployment](https://base-sepolia.blockscout.com/tx/0x432a35d82a008b510d21a2586bca0faa1cfc0574c11ab7f2b746c3ee898ab385) of [StockDeskLog at 0x123c...2128](https://base-sepolia.blockscout.com/address/0x123c296e78942074bb78fa3fcd50244a46a92128). Source: [contracts/StockDeskLog.sol](contracts/StockDeskLog.sol).
 
 ![The demo page links each step to its transaction](docs/walkthrough/2-desk-onchain.png)
