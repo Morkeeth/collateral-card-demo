@@ -15,7 +15,7 @@ On the saved weekend the lender view shows health 1.413 and the weekend view 1.3
 
 Five steps, about five minutes. Steps 1 and 2 run on your machine. Steps 3 to 5 are on public Base Sepolia (chain id 84532) and need only a browser. Every command in this section was run on 25 November 2026. The outputs shown are real; the JSON in step 1 is reflowed onto fewer lines.
 
-**1. The agent asks before it spends.** It is Sunday 9 November 2026, 00:05 UTC. The agent wants to spend 40 USDC on a report.
+**1. The agent asks before it spends.** It is Monday 9 November 2026, 00:05 UTC, Sunday evening in New York, before the lending price reopens. The agent wants to spend 40 USDC on a report.
 
 ```sh
 python3 -B proof/run_desk.py --serve 8851
@@ -34,7 +34,9 @@ curl -s "http://127.0.0.1:8851/desk/spend?usd=40"
 
 The lender would say yes. The desk says spend at most 26.31.
 
-![The desk on Sunday night: positions, both health views and the CUT answer](docs/walkthrough/1-desk-cut.png)
+![The first screen: one spend request, the lender's yes and the desk's cut](docs/walkthrough/0-first-screen.png)
+
+![The desk before the reopen: positions, both health views and the CUT answer](docs/walkthrough/1-desk-cut.png)
 
 **2. The desk pays for the weekend price it used.** The price check is an x402 endpoint. The first request gets HTTP 402. The desk signs a 0.05 test USDC authorization, retries and gets the dated quote with HTTP 200. Sending the same authorization again gets 402 with "authorization already used". These three HTTP answers happened on this machine and are saved in the [public run receipt](demo/public-sepolia.json) under `paid_check`. Only the payment itself is on chain (step 4).
 

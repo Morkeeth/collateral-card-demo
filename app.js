@@ -749,6 +749,10 @@
       setReveal(1);
       return;
     }
+    // Written exception to the 300ms product UI limit (DESIGN.md section 8): this is the replay of a
+    // recorded weekend, a story animation the reader asks for with the Replay button. The sweep is the
+    // content (Friday's frozen price against the hourly pool closes), so it runs at reading speed.
+    // It never runs on load, it uses an ease-out curve, and prefers-reduced-motion skips it.
     var start = null;
     var duration = 2200;
     function tick(ts) {

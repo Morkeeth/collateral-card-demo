@@ -11,12 +11,22 @@
   <main class="page">
     <header class="intro">
       <h1>Stock Desk for agents</h1>
-      <p class="lede">
-        An agent that keeps its savings in tokenized stocks on Base asks the desk before every spend. The desk shows its positions, its exposure and its real weekend health, then allows the spend, cuts it to the safe amount, or refuses.
+      <p class="lede" data-testid="problem">
+        Over a weekend, the lender still prices tokenized stocks at Friday's close. An agent that borrows against them on Base can be told yes to a spend it cannot afford. The desk checks every spend at the Base pool price first.
       </p>
-      <section aria-labelledby="offline-heading">
-        <h2 id="offline-heading">Verify offline</h2>
-        <p class="section-note">From the repository root with Python 3.10 or later, run <code>python3 -B proof/verify_judge.py</code> to rebuild the forecast and verify the saved replay receipts.</p>
+      <section class="ask" aria-label="One spend request, two answers">
+        <p class="ask-request" data-testid="agent-request"><span id="ask-when">Before the lending price reopens</span>, the agent asks to spend <b class="num" id="ask-amount"></b><span id="ask-split"></span>.</p>
+        <div class="answers">
+          <div class="answer" data-testid="lender-answer">
+            <p class="answer-who">The lender, at Friday's price</p>
+            <p class="answer-says"><b id="ask-lender-word"></b> <span class="num" id="ask-lender"></span></p>
+          </div>
+          <div class="answer answer-desk" data-testid="decision">
+            <p class="answer-who">The desk, at the Base pool price</p>
+            <p class="answer-says"><b class="answer-action" id="ask-action"></b> <span class="num" id="ask-allowed"></span></p>
+            <p class="answer-why" id="ask-why" role="status"></p>
+          </div>
+        </div>
       </section>
       <nav class="judge-links" aria-label="Explore the demo">
         <a href="https://github.com/Morkeeth/collateral-card-demo#verify-offline">Offline check instructions</a>
@@ -31,8 +41,8 @@
 
 
     <section class="desk" data-testid="desk" aria-labelledby="desk-heading">
-      <h2 id="desk-heading">The agent's desk on Sunday night</h2>
-      <p class="section-note">The lending market still uses Friday's price. The desk prices each position at the closed Base pool candle as well, minus the forecast error band, and checks the owner's limits there.</p>
+      <h2 id="desk-heading">The agent's desk before the reopen</h2>
+      <p class="section-note">Each position at both prices. The desk checks the owner's limits at the closed Base pool candle, minus the forecast error band.</p>
       <p id="desk-status" role="status">Loading desk receipt…</p>
       <div id="desk-result" hidden>
         <p id="desk-observation" class="desk-observation"></p>
@@ -55,7 +65,7 @@
         <h3 id="onchain-heading">The same 40 USDC decision on public Base Sepolia</h3>
         <ol class="desk-checks onchain-steps" data-testid="onchain">
           <li>The desk wallet deployed its spend record, a contract only the desk can write to. <a href="https://base-sepolia.blockscout.com/tx/0x432a35d82a008b510d21a2586bca0faa1cfc0574c11ab7f2b746c3ee898ab385">Deployment</a></li>
-          <li>It paid <b>0.05 test USDC</b> for the weekend price check. A second use of the same payment was refused. <a href="https://base-sepolia.blockscout.com/tx/0x17e720bc2436cde2f4162902da4382e97202644ff009b1686b3817dc3bcea7bf">Payment</a></li>
+          <li>It paid <strong>0.05 test USDC</strong> for the weekend price check. A second use of the same payment was refused. <a href="https://base-sepolia.blockscout.com/tx/0x17e720bc2436cde2f4162902da4382e97202644ff009b1686b3817dc3bcea7bf">Payment</a></li>
           <li>It recorded <b>CUT</b>: 40.00 asked, 26.31 allowed, with the payment and a digest of the quote. <a href="https://base-sepolia.blockscout.com/tx/0xccbaea0f7e4c435a83d0ef4afadf6f6023c8c9b233f0dc686dbebf4418766f49">Recorded decision</a></li>
         </ol>
         <p class="quote-provenance">Testnet only. Prices are historical replays and the loan is simulated. <a href="https://github.com/Morkeeth/collateral-card-demo#judge-walkthrough-from-the-agents-request-to-the-explorer">How to check each step</a></p>
@@ -65,6 +75,11 @@
           <a href="#paid-quote-heading">The price check it reads</a>
         </div>
       </div>
+    </section>
+
+    <section class="offline" aria-labelledby="offline-heading">
+      <h2 id="offline-heading">Verify offline</h2>
+      <p class="section-note">From the repository root with Python 3.10 or later, run <code>python3 -B proof/verify_judge.py</code> to rebuild the forecast and verify the saved replay receipts.</p>
     </section>
 
     <section class="paid-quote" aria-labelledby="paid-quote-heading">

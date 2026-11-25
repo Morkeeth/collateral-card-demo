@@ -14,7 +14,30 @@
     row.append(td);
   }
 
+  const weekday = new Intl.DateTimeFormat("en-GB", { weekday: "long", timeZone: "UTC" });
+  const set = (id, text) => { document.getElementById(id).textContent = text; };
+
+  // The first screen: one spend request and the two answers to it, all read from the receipt.
+  function ask(r) {
+    const c = r.checks.find((x) => x.action === "CUT") || r.checks[0];
+    const when = new Date(c.as_of_utc || r.desk.as_of_utc);
+    set("ask-when", `On ${weekday.format(when)} ${day.format(when)} UTC, before the lending price reopens`);
+    set("ask-amount", money.format(c.amount_usd));
+    set("ask-split", Number(c.borrow_usd) > 0
+      ? `, ${money.format(c.from_cash_usd)} from cash and ${money.format(c.borrow_usd)} borrowed` : " from cash");
+    set("ask-lender-word", c.lender_would_allow ? "Yes, up to" : "No, at most");
+    set("ask-lender", money.format(r.desk.spend.lender_would_allow_usd));
+    const verbs = { ALLOW: "Allowed", CUT: "Cut to", REFUSE: "Refused" };
+    set("ask-action", verbs[c.action] || c.action);
+    set("ask-allowed", c.action === "REFUSE" ? "" : money.format(c.allowed_usd));
+    const a = r.after_reopen;
+    set("ask-why", a && a.floor_breached_without_desk
+      ? `When the price reopened, the full ${money.format(a.requested_usd)} would have put the loan under the owner's safety floor. The cut amount kept it above.`
+      : c.reason);
+  }
+
   function show(r) {
+    ask(r);
     const d = r.desk;
     document.getElementById("desk-observation").textContent =
       `${day.format(new Date(d.as_of_utc))} UTC · debt ${d.debt_usd} USDC · cash ${d.cash_usd} USDC`;
@@ -66,5 +89,10 @@
   fetch("demo/desk.json")
     .then((response) => { if (!response.ok) throw new Error(); return response.json(); })
     .then(show)
-    .catch(() => { status.textContent = "The desk receipt could not load. Reload the page to retry."; });
+    .catch(() => {
+      const msg = "The desk receipt could not load. Reload the page to retry.";
+      status.textContent = msg;
+      document.querySelector(".ask").classList.add("ask-failed");
+      set("ask-why", msg);
+    });
 })();
