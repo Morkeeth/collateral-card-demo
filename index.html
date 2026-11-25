@@ -52,6 +52,13 @@
         <ol id="desk-checks" class="desk-checks"></ol>
         <p id="desk-reopen" class="quote-provenance"></p>
         <p class="quote-provenance">Historical replay of the 6 November weekend. Demo book, not a real wallet. The desk places no trades.</p>
+        <h3 id="onchain-heading">The same 40 USDC decision on public Base Sepolia</h3>
+        <ol class="desk-checks onchain-steps" data-testid="onchain">
+          <li>The desk wallet deployed its spend record, a contract only the desk can write to. <a href="https://base-sepolia.blockscout.com/tx/0x432a35d82a008b510d21a2586bca0faa1cfc0574c11ab7f2b746c3ee898ab385">Deployment</a></li>
+          <li>It paid <b>0.05 test USDC</b> for the weekend price check. A second use of the same payment was refused. <a href="https://base-sepolia.blockscout.com/tx/0x17e720bc2436cde2f4162902da4382e97202644ff009b1686b3817dc3bcea7bf">Payment</a></li>
+          <li>It recorded <b>CUT</b>: 40.00 asked, 26.31 allowed, with the payment and a digest of the quote. <a href="https://base-sepolia.blockscout.com/tx/0xccbaea0f7e4c435a83d0ef4afadf6f6023c8c9b233f0dc686dbebf4418766f49">Recorded decision</a></li>
+        </ol>
+        <p class="quote-provenance">Testnet only. Prices are historical replays and the loan is simulated. <a href="https://github.com/Morkeeth/collateral-card-demo#judge-walkthrough-from-the-agents-request-to-the-explorer">How to check each step</a></p>
         <div class="judge-links">
           <a href="demo/desk.json">Desk receipt</a>
           <a href="https://github.com/Morkeeth/collateral-card-demo/blob/main/proof/collateral_card/desk.py">Desk code</a>
@@ -84,7 +91,7 @@
               <dd id="quote-gap"></dd>
             </div>
           </dl>
-          <p class="quote-provenance">Historical prices. Payment verified on a local Base Sepolia fork. Reusing the same authorization caused no second debit.</p>
+          <p class="quote-provenance">Historical prices. Payment settled on public Base Sepolia in test USDC (<a href="https://base-sepolia.blockscout.com/tx/0x17e720bc2436cde2f4162902da4382e97202644ff009b1686b3817dc3bcea7bf">transaction</a>). Reusing the same authorization caused no second debit.</p>
           <div class="judge-links">
             <a href="demo/paid-quote.json">Payment receipt</a>
             <a href="proof/backtest-observations.csv">Price observations</a>
@@ -306,7 +313,7 @@
       <p>The saved loan results came from a local Base mainnet fork with a replayed reopen. The page independently calculates rule outcomes from recorded prices.</p>
       <p>The collateral token and price feed are stand-ins.</p>
       <p>Whether an agent wallet can hold real NVDAc is unverified.</p>
-      <p>The checkout ran on a local Base Sepolia fork. The saved loan trials ran on a separate local Base mainnet fork.</p>
+      <p>The checkout and the desk's spend record ran on public Base Sepolia with test USDC. The saved loan trials ran on a separate local Base mainnet fork.</p>
       <p>The 6 Nov guarded and control run repays from borrowed USDC.</p>
       <p>All 518 payments came from one stand-in buyer. The endpoint returned an acknowledgment and delivered no forecast. Customer demand and repayment economics remain untested. The fork supplied the gas.</p>
       <p>The fork receipt has no repay time. The chart draws the repay when the forecast reads its last Sunday price.</p>

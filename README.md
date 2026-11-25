@@ -11,6 +11,73 @@ python3 -B proof/run_desk.py --serve 8851    # GET /desk and /desk/spend?usd=25 
 
 On the saved weekend the lender view shows health 1.413 and the weekend view 1.358 against an owner floor of 1.30. The agent holds 10 USDC cash. A 40 USDC spend passes on Friday's price and is cut to 26.31 USDC on the weekend price. When the feed reopened, the full spend would have left health at 1.287, under the floor, and the cut amount left it at 1.334. Liquidation starts at 1.0, so neither path was liquidated. The book and the 40 USDC amount were chosen by us to show the case. On these recorded prices the floor breaks at reopen only for spends above about 36.15 USDC, while Friday's price allows up to 41.46 USDC, so the example sits in a window of about 5 USDC. It is one recorded weekend. The book is a demo book, not a real wallet, and the prices are historical replays. The [desk receipt](demo/desk.json) is the captured run and [desk.py](proof/collateral_card/desk.py) is the code. Tests: `cd tests && python3 -B -m unittest test_desk`.
 
+## Judge walkthrough: from the agent's request to the explorer
+
+Five steps, about five minutes. Steps 1 and 2 run on your machine. Steps 3 to 5 are on public Base Sepolia (chain id 84532) and need only a browser. Every command below was run on 25 November 2026 and the output shown is the real output.
+
+**1. The agent asks before it spends.** It is Sunday 9 November 2026, 00:05 UTC. The agent wants to spend 40 USDC on a report.
+
+```sh
+python3 -B proof/run_desk.py --serve 8851
+curl -s "http://127.0.0.1:8851/desk/spend?usd=40"
+```
+
+```json
+{"amount_usd": "40.00", "from_cash_usd": "10.00", "borrow_usd": "30.00",
+ "lender_would_allow": true,
+ "health_now": {"lender_view": "1.413", "weekend_view": "1.358", "floor": "1.30"},
+ "action": "CUT", "allowed_usd": "26.31",
+ "reason": "Friday's lending price allows this spend. The weekend price does not. Spend at most 26.31 USDC now.",
+ "health_after": "1.300"}
+```
+
+The lender would say yes. The desk says spend at most 26.31.
+
+![The desk on Sunday night: positions, both health views and the CUT answer](docs/walkthrough/1-desk-cut.png)
+
+**2. The desk pays for the weekend price it used.** The price check is an x402 endpoint. The first request gets HTTP 402. The desk signs a 0.05 test USDC authorization, retries and gets the dated quote with HTTP 200. Sending the same authorization again gets 402 with "authorization already used". These three HTTP answers happened on this machine and are saved in the [public run receipt](demo/public-sepolia.json) under `paid_check`. Only the payment itself is on chain (step 4).
+
+**3. The spend record exists on Base Sepolia.** The desk wallet deployed `StockDeskLog`, a contract that only the desk wallet can write to. It records decisions and never trades.
+
+- Desk wallet: [0xFFF4...D7BC](https://base-sepolia.blockscout.com/address/0xFFF475A9cC3c552483612D2699DE26114F8DD7BC). This is a fresh testnet-only key with three transactions, the three below.
+- [Contract deployment](https://base-sepolia.blockscout.com/tx/0x432a35d82a008b510d21a2586bca0faa1cfc0574c11ab7f2b746c3ee898ab385) of [StockDeskLog at 0x123c...2128](https://base-sepolia.blockscout.com/address/0x123c296e78942074bb78fa3fcd50244a46a92128). Source: [contracts/StockDeskLog.sol](contracts/StockDeskLog.sol).
+
+![The demo page links each step to its transaction](docs/walkthrough/2-desk-onchain.png)
+
+**4. The payment is on chain.** [Test USDC payment](https://base-sepolia.blockscout.com/tx/0x17e720bc2436cde2f4162902da4382e97202644ff009b1686b3817dc3bcea7bf): the desk wallet sends exactly 0.05 Circle test USDC (`0x036C...CF7e`) to the price-check seller `0xCed7...c67B` through `transferWithAuthorization`. The repeat refusal in step 2 can be checked at the token contract: the authorization nonce is marked used.
+
+```sh
+cast call 0x036CbD53842c5426634e7929541eC2318f3dCF7e "authorizationState(address,bytes32)(bool)" \
+  0xFFF475A9cC3c552483612D2699DE26114F8DD7BC 0x2cda6e2d9f32484e38b1b4e70c5968f882376142050336b7d656cba98aaaa439 \
+  --rpc-url https://sepolia.base.org
+# true
+```
+
+![The 0.05 test USDC transfer on Blockscout](docs/walkthrough/3-explorer-payment.png)
+
+**5. The decision is on chain.** [Recorded spend decision](https://base-sepolia.blockscout.com/tx/0xccbaea0f7e4c435a83d0ef4afadf6f6023c8c9b233f0dc686dbebf4418766f49): one `SpendDecision` event. The contract source is not verified on Blockscout yet, so the explorer shows the event data as raw words. Decode it with Foundry:
+
+```sh
+DATA=$(cast receipt 0xccbaea0f7e4c435a83d0ef4afadf6f6023c8c9b233f0dc686dbebf4418766f49 logs --rpc-url https://sepolia.base.org | jq -r '.[0].data')
+cast decode-abi --input "f(uint8,uint256,uint256,bytes32,string)" "$DATA"
+# 2                      action: 1 ALLOW, 2 CUT, 3 REFUSE
+# 4000                   asked, in cents
+# 2631                   allowed, in cents
+# 0x17e720bc...a7bf      the payment transaction from step 4
+# "Friday's lending price allows this spend. The weekend price does not. Spend at most 26.31 USDC now."
+```
+
+The event's second topic, `0x98706715...652f`, is the sha3-256 digest of the full decision and quote. The receipt publishes the exact text that was hashed, so anyone can recompute it:
+
+```sh
+python3 -c 'import json,hashlib; r=json.load(open("demo/public-sepolia.json")); print("0x"+hashlib.sha3_256(r["record_preimage"].encode()).hexdigest()==r["record_digest_sha3_256"])'
+# True
+```
+
+![The recorded spend decision on Blockscout](docs/walkthrough/4-explorer-record.png)
+
+**What is real and what is replayed.** Real: the desk code, the three Base Sepolia transactions, the test USDC payment and the recorded decision. Replayed: the prices (Base mainnet observations from the 6 November weekend) and the agent's book (a demo book). The loan is simulated, because Base Sepolia has no lender or stock token at the addresses the replay uses. To rerun the public flow on a local copy of Base Sepolia with no funds: `python3 -B proof/run_public.py --rehearse --out /tmp/desk-rehearsal.json` (needs Foundry).
+
 The loan rule underneath is Collateral Card, described below.
 
 # Collateral Card
